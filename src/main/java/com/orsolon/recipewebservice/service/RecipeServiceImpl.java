@@ -1,10 +1,9 @@
 package com.orsolon.recipewebservice.service;
 
+import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.dto.RecipeDTO;
 import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.model.Recipe;
-import com.orsolon.recipewebservice.model.RecipeCategory;
-import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
 import com.orsolon.recipewebservice.repository.RecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,13 +12,13 @@ import org.springframework.stereotype.Service;
 public class RecipeServiceImpl implements RecipeService {
 
     private final RecipeRepository recipeRepository;
-    private final RecipeCategoryRepository recipeCategoryRepository;
+    private final RecipeCategoryService recipeCategoryService;
     private final DTOConverter dtoConverter;
 
     @Autowired
-    public RecipeServiceImpl(RecipeRepository recipeRepository, RecipeCategoryRepository recipeCategoryRepository, DTOConverter dtoConverter) {
+    public RecipeServiceImpl(RecipeRepository recipeRepository, RecipeCategoryService recipeCategoryService, DTOConverter dtoConverter) {
         this.recipeRepository = recipeRepository;
-        this.recipeCategoryRepository = recipeCategoryRepository;
+        this.recipeCategoryService = recipeCategoryService;
         this.dtoConverter = dtoConverter;
     }
 
@@ -31,7 +30,7 @@ public class RecipeServiceImpl implements RecipeService {
         // Persist associated RecipeCategory objects first
         recipeToSave.getCategories().forEach(category -> {
             if (category.getId() == null) {
-                RecipeCategory savedCategory = recipeCategoryRepository.save(category);
+                RecipeCategoryDTO savedCategory = recipeCategoryService.create(dtoConverter.convertRecipeCategoryToDTO(category));
                 category.setId(savedCategory.getId());
             }
         });

@@ -19,35 +19,44 @@ import java.util.List;
 public class RecipeServiceTest {
 
     private RecipeService recipeService;
-
     private RecipeRepository recipeRepository;
-
+    private RecipeCategoryService recipeCategoryService;
     private RecipeCategoryRepository recipeCategoryRepository;
-
     private DTOConverter dtoConverter;
 
     @BeforeEach
     void setUp() {
-        this.recipeRepository = Mockito.mock(RecipeRepository.class);
+        // Mock
         this.recipeCategoryRepository = Mockito.mock(RecipeCategoryRepository.class);
+        this.recipeRepository = Mockito.mock(RecipeRepository.class);
         this.dtoConverter = Mockito.mock(DTOConverter.class);
-        this.recipeService = new RecipeServiceImpl(recipeRepository, recipeCategoryRepository, dtoConverter);
+
+        // Inject Mocks
+        this.recipeCategoryService = new RecipeCategoryServiceImpl(recipeCategoryRepository, dtoConverter);
+        this.recipeService = new RecipeServiceImpl(recipeRepository, recipeCategoryService, dtoConverter);
     }
 
     @Test
-    void testCreateRecipeCategoryWithNullId() {
+    public void testCreateRecipeCategoryWithNullId() {
         // Create a RecipeDTO object with a category that has a null ID
         RecipeDTO mockRecipeDTO = createMockRecipeDTO(null);
+        RecipeCategoryDTO mockRecipeCategoryDTO = mockRecipeDTO.getCategories().get(0);
 
         // Create a Recipe entity with a category that has a null ID
         Recipe mockRecipe = createMockRecipe(null);
-
+        RecipeCategory mockRecipeCategory = mockRecipe.getCategories().get(0);
 
         // Mock the necessary methods
+        // Recipe
         Mockito.when(recipeRepository.save(Mockito.any(Recipe.class))).thenReturn(mockRecipe);
-        Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipe.getCategories().get(0));
         Mockito.when(dtoConverter.convertRecipeToEntity(Mockito.any(RecipeDTO.class))).thenReturn(mockRecipe);
         Mockito.when(dtoConverter.convertRecipeToDTO(Mockito.any(Recipe.class))).thenReturn(mockRecipeDTO);
+
+        // RecipeCategory
+        Mockito.when(recipeCategoryService.create(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
 
         // Call the create method
         recipeService.create(mockRecipeDTO);
@@ -58,18 +67,26 @@ public class RecipeServiceTest {
 
 
     @Test
-    void testCreateRecipeCategoryWithNonNullId() {
+    public void testCreateRecipeCategoryWithNonNullId() {
         // Create a RecipeDTO object with a category that has a null ID
         RecipeDTO mockRecipeDTO = createMockRecipeDTO(1L);
+        RecipeCategoryDTO mockRecipeCategoryDTO = mockRecipeDTO.getCategories().get(0);
 
         // Create a Recipe entity with a category that has a null ID
         Recipe mockRecipe = createMockRecipe(1L);
+        RecipeCategory mockRecipeCategory = mockRecipe.getCategories().get(0);
 
         // Mock the necessary methods
+        // Recipe
         Mockito.when(recipeRepository.save(Mockito.any(Recipe.class))).thenReturn(mockRecipe);
-        Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipe.getCategories().get(0));
         Mockito.when(dtoConverter.convertRecipeToEntity(Mockito.any(RecipeDTO.class))).thenReturn(mockRecipe);
         Mockito.when(dtoConverter.convertRecipeToDTO(Mockito.any(Recipe.class))).thenReturn(mockRecipeDTO);
+
+        // RecipeCategory
+        Mockito.when(recipeCategoryService.create(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
 
         // Call the create method
         recipeService.create(mockRecipeDTO);
@@ -83,6 +100,7 @@ public class RecipeServiceTest {
         RecipeDTO recipeDTO = new RecipeDTO();
         RecipeCategoryDTO categoryDTO = new RecipeCategoryDTO();
         categoryDTO.setId(categoryId);
+        categoryDTO.setName("Mock Category");
         List<RecipeCategoryDTO> categories = new ArrayList<>();
         categories.add(categoryDTO);
         recipeDTO.setCategories(categories);
@@ -95,6 +113,7 @@ public class RecipeServiceTest {
         Recipe recipe = new Recipe();
         RecipeCategory category = new RecipeCategory();
         category.setId(categoryId);
+        category.setName("Mock Category");
         List<RecipeCategory> categories = new ArrayList<>();
         categories.add(category);
         recipe.setCategories(categories);
