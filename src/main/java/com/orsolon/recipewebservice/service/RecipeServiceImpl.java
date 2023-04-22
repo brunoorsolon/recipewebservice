@@ -14,24 +14,19 @@ public class RecipeServiceImpl implements RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final RecipeCategoryRepository recipeCategoryRepository;
-    private final DtoConverter dtoConverter;
+    private final DTOConverter dtoConverter;
 
     @Autowired
-    public RecipeServiceImpl(RecipeRepository recipeRepository, RecipeCategoryRepository recipeCategoryRepository, RecipeCategoryRepository recipeCategoryRepository1, DtoConverter dtoConverter) {
+    public RecipeServiceImpl(RecipeRepository recipeRepository, RecipeCategoryRepository recipeCategoryRepository, DTOConverter dtoConverter) {
         this.recipeRepository = recipeRepository;
-        this.recipeCategoryRepository = recipeCategoryRepository1;
+        this.recipeCategoryRepository = recipeCategoryRepository;
         this.dtoConverter = dtoConverter;
     }
 
     @Override
     public RecipeDTO create(RecipeDTO recipeDTO) {
-/*        Optional<Recipe> existingRecipe = recipeRepository.findByTitle(recipeDTO.getTitle());
-        if (existingRecipe.isPresent()) {
-            throw new RecipeAlreadyExistsException("A recipe with the same name already exists.");
-        }*/
-
         // Convert the RecipeDTO to a Recipe entity
-        Recipe recipeToSave = dtoConverter.convertToEntity(recipeDTO);
+        Recipe recipeToSave = dtoConverter.convertRecipeToEntity(recipeDTO);
 
         // Persist associated RecipeCategory objects first
         recipeToSave.getCategories().forEach(category -> {
@@ -50,7 +45,7 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe savedRecipe = recipeRepository.save(recipeToSave);
 
         // Convert the saved Recipe entity back to a RecipeDTO
-        return dtoConverter.convertToDTO(savedRecipe);
+        return dtoConverter.convertRecipeToDTO(savedRecipe);
     }
 
 }
