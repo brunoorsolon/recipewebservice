@@ -1,0 +1,158 @@
+[
+  {
+    "title": "",
+    "quantity": "1",
+    "unit": "pound",
+    "item": "Ground chuck or lean ground; beef"
+  },
+  {
+    "title": "Example Title 1",
+    "quantity": "1",
+    "unit": "",
+    "item": "Onion; large, chopped"
+  },
+  {
+    "title": "Example Title 2",
+    "quantity": "1",
+    "unit": "can",
+    "item": "Kidney beans; (12 oz)"
+  },
+  {
+    "title": "",
+    "quantity": "1",
+    "unit": "can",
+    "item": "Tomato soup; undiluted"
+  },
+  {
+    "title": "Example Title 1",
+    "quantity": "1",
+    "unit": "teaspoon",
+    "item": "Salt"
+  },
+  {
+    "title": "Example Title 2",
+    "quantity": "1",
+    "unit": "tablespoon",
+    "item": "Chili powder; (or to taste)"
+  },
+  {
+    "title": "",
+    "quantity": "",
+    "unit": "",
+    "item": "Hot pepper sauce; to taste"
+  },
+  {
+    "title": "Example Title 1",
+    "quantity": "1",
+    "unit": "pound",
+    "item": "Zucchini; cubed 1/2"
+  },
+  {
+    "title": "Example Title 2",
+    "quantity": "3",
+    "unit": "tablespoons",
+    "item": "Butter or margarine"
+  },
+  {
+     "title": "",
+    "quantity": "3",
+    "unit": "",
+    "item": "Eggs; beaten"
+  },
+  {
+     "title": "Example Title 1",
+    "quantity": "1",
+    "unit": "",
+    "item": "Jar pimentos; 2 1/2 oz, diced"
+  },
+  {
+     "title": "Example Title 2",
+    "quantity": "1",
+    "unit": "cup",
+    "item": "Cheddar cheese; shredded"
+  },
+  {
+     "title": "",
+    "quantity": "1",
+    "unit": "can",
+    "item": "French fried onion rings 3 oz."
+  },
+  {
+     "title": "Example Title 1",
+    "quantity": "1 1/2",
+    "unit": "cups",
+    "item": "Toasted Almonds; chopped"
+  },
+  {
+     "title": "Example Title 2",
+    "quantity": "1",
+    "unit": "package",
+    "item": "Yellow cake mix; no pudding"
+  },
+  {
+     "title": "",
+    "quantity": "1",
+    "unit": "package",
+    "item": "Vanilla instant pudding"
+  },
+  {
+     "title": "Example Title 1",
+    "quantity": "4",
+    "unit": "",
+    "item": "Eggs"
+  },
+  {
+     "title": "Example Title 2",
+    "quantity": "1/2",
+    "unit": "cups",
+    "item": "Vegetable oil"
+  },
+  {
+     "title": "",
+    "quantity": "1/2",
+    "unit": "cups",
+    "item": "Water"
+  },
+  {
+     "title": "Example Title 1",
+    "quantity": "1",
+    "unit": "teaspoon",
+    "item": "Almond extract"
+  },
+  {
+     "title": "Example Title 2",
+    "quantity": "1",
+    "unit": "package",
+    "item": "Yellow cake mix; no pudding"
+  },
+  {
+     "title": "",
+    "quantity": "1/2",
+    "unit": "cups",
+    "item": "Sugar"
+  },
+  {
+     "title": "Example Title 1",
+    "quantity": "1/4",
+    "unit": "cups",
+    "item": "Water"
+  },
+  {
+     "title": "Example Title 2",
+    "quantity": "2",
+    "unit": "tablespoons",
+    "item": "Butter"
+  },
+  {
+     "title": "",
+    "quantity": "1/4",
+    "unit": "cups",
+    "item": "Amaretto"
+  },
+  {
+     "title": "Example Title 1",
+    "quantity": "1/2",
+    "unit": "teaspoons",
+    "item": "Almond extract"
+  }
+]
