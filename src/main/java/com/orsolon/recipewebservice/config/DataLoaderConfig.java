@@ -5,8 +5,9 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-// Responsible for loading default data into the system for testing purposes
+// Responsible for loading default data into the system
 @Configuration
+@Profile("!test")
 public class DataLoaderConfig {
     private final RecipeInitializer recipeInitializer;
 
@@ -16,7 +17,6 @@ public class DataLoaderConfig {
 
     // Load default Recipes
     @PostConstruct
-    @Profile("!test")
     public void loadRecipes() {
         // Call the loadRecipes method of the RecipeInitializer
         recipeInitializer.loadRecipes();
