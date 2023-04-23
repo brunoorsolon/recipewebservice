@@ -52,6 +52,13 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
+    public RecipeDTO findByTitle(String title) {
+        Recipe recipe = recipeRepository.findByTitle(title)
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with titel: " + title));
+        return dtoConverter.convertRecipeToDTO(recipe);
+    }
+
+    @Override
     public List<RecipeDTO> findByCategory(Long categoryId) {
         List<Recipe> recipes = recipeRepository.findByCategories_Id(categoryId);
         return recipes.stream()
@@ -79,13 +86,18 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO create(RecipeDTO recipeDTO) {
-        Optional<Recipe> existingRecipe = Optional.empty();
+        Optional<Recipe> existingRecipe;
         if (recipeDTO.getId() != null) {
             existingRecipe = recipeRepository.findById(recipeDTO.getId());
+            if (existingRecipe.isPresent()) {
+                throw new RecipeAlreadyExistsException("A recipe with the same ID already exists.");
+            }
         }
-
-        if (existingRecipe.isPresent()) {
-            throw new RecipeAlreadyExistsException("A recipe with the same ID already exists.");
+        if (recipeDTO.getTitle() != null) {
+            existingRecipe = recipeRepository.findByTitle(recipeDTO.getTitle());
+            if (existingRecipe.isPresent()) {
+                throw new RecipeAlreadyExistsException("A recipe with the same Title already exists.");
+            }
         }
         // Validate and sanitize the input RecipeDTO object
         RecipeDTO sanitizedRecipeDTO = RecipeValidatorHelper.validateAndSanitize(recipeDTO);
@@ -99,7 +111,7 @@ public class RecipeServiceImpl implements RecipeService {
             category.setId(savedCategory.getId());
         });
 
-        // Set the relationship between Recipe and Ingredient
+        // Set the relationship between Recipe and Ingredient, and persist the Ingredient entities
         for (Ingredient ingredient : recipeToSave.getIngredients()) {
             ingredient.setRecipe(recipeToSave);
         }
