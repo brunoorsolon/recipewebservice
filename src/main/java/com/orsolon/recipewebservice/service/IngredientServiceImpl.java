@@ -11,7 +11,6 @@ public class IngredientServiceImpl implements IngredientService {
 
     private final IngredientRepository ingredientRepository;
     private final DTOConverter dtoConverter;
-
     @Autowired
     public IngredientServiceImpl(IngredientRepository ingredientRepository, DTOConverter dtoConverter) {
         this.ingredientRepository = ingredientRepository;
@@ -20,8 +19,11 @@ public class IngredientServiceImpl implements IngredientService {
 
     @Override
     public IngredientDTO create(IngredientDTO ingredientDTO) {
+        // Validate and sanitize the input IngredientDTO object
+        IngredientDTO sanitizedIngredientDTO = EntityValidatorHelper.validateAndSanitizeIngredientDTO(ingredientDTO);
+
         // Convert the IngredientDTO to an Ingredient entity
-        Ingredient ingredientToSave = dtoConverter.convertIngredientToEntity(ingredientDTO);
+        Ingredient ingredientToSave = dtoConverter.convertIngredientToEntity(sanitizedIngredientDTO);
 
         // Save the Ingredient entity to the repository
         Ingredient savedRecipeCategory = ingredientRepository.save(ingredientToSave);

@@ -53,10 +53,10 @@ public class RecipeServiceTest {
         Mockito.when(dtoConverter.convertRecipeToDTO(Mockito.any(Recipe.class))).thenReturn(mockRecipeDTO);
 
         // RecipeCategory
-        Mockito.when(recipeCategoryService.create(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategoryDTO);
-        Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
-        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
-        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryService.create(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryRepository.save(mockRecipeCategory)).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(mockRecipeCategory)).thenReturn(mockRecipeCategoryDTO);
 
         // Call the create method
         recipeService.create(mockRecipeDTO);
@@ -83,10 +83,10 @@ public class RecipeServiceTest {
         Mockito.when(dtoConverter.convertRecipeToDTO(Mockito.any(Recipe.class))).thenReturn(mockRecipeDTO);
 
         // RecipeCategory
-        Mockito.when(recipeCategoryService.create(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategoryDTO);
-        Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
-        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
-        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryService.create(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryRepository.save(mockRecipeCategory)).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(mockRecipeCategory)).thenReturn(mockRecipeCategoryDTO);
 
         // Call the create method
         recipeService.create(mockRecipeDTO);
@@ -97,28 +97,32 @@ public class RecipeServiceTest {
 
     // Helper method to create a mock RecipeDTO object with a specified category ID
     private RecipeDTO createMockRecipeDTO(Long categoryId) {
-        RecipeDTO recipeDTO = new RecipeDTO();
-        RecipeCategoryDTO categoryDTO = new RecipeCategoryDTO();
-        categoryDTO.setId(categoryId);
-        categoryDTO.setName("Mock Category");
         List<RecipeCategoryDTO> categories = new ArrayList<>();
-        categories.add(categoryDTO);
-        recipeDTO.setCategories(categories);
-        recipeDTO.setIngredients(new ArrayList<>());
-        recipeDTO.setSteps(new ArrayList<>());
-        return recipeDTO;
+        categories.add(RecipeCategoryDTO.builder()
+                .id(categoryId)
+                .name("Mock Category")
+                .build());
+
+        return RecipeDTO.builder()
+                .title("Mock Recipe")
+                .categories(categories)
+                .ingredients(new ArrayList<>())
+                .steps(new ArrayList<>())
+                .build();
     }
     // Helper method to create a mock Recipe object with a specified category ID
     private Recipe createMockRecipe(Long categoryId) {
-        Recipe recipe = new Recipe();
-        RecipeCategory category = new RecipeCategory();
-        category.setId(categoryId);
-        category.setName("Mock Category");
         List<RecipeCategory> categories = new ArrayList<>();
-        categories.add(category);
-        recipe.setCategories(categories);
-        recipe.setIngredients(new ArrayList<>());
-        recipe.setSteps(new ArrayList<>());
-        return recipe;
+        categories.add(RecipeCategory.builder()
+                .id(categoryId)
+                .name("Mock Category")
+                .build());
+
+        return Recipe.builder()
+                .title("Mock Recipe")
+                .categories(categories)
+                .ingredients(new ArrayList<>())
+                .steps(new ArrayList<>())
+                .build();
     }
 }
