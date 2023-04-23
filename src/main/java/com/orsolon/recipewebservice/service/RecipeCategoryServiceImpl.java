@@ -5,6 +5,7 @@ import com.orsolon.recipewebservice.exception.RecipeCategoryNotFoundException;
 import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
+import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -73,7 +74,7 @@ public class RecipeCategoryServiceImpl implements RecipeCategoryService {
         }
 
         // Validate and sanitize the input RecipeCategoryDTO object
-        RecipeCategoryDTO sanitizedRecipeCategoryDTO = EntityValidatorHelper.validateAndSanitizeRecipeCategoryDTO(recipeCategoryDTO);
+        RecipeCategoryDTO sanitizedRecipeCategoryDTO = RecipeCategoryValidatorHelper.validateAndSanitize(recipeCategoryDTO);
 
         // Convert the RecipeCategoryDTO to a RecipeCategory entity
         RecipeCategory recipeCategoryToSave = dtoConverter.convertRecipeCategoryToEntity(sanitizedRecipeCategoryDTO);
@@ -91,7 +92,7 @@ public class RecipeCategoryServiceImpl implements RecipeCategoryService {
                 .orElseThrow(() -> new RecipeCategoryNotFoundException("Recipe Category not found with id: " + categoryId));
 
         // Validate and sanitize the input RecipeCategoryDTO object
-        RecipeCategoryDTO sanitizedRecipeCategoryDTO = EntityValidatorHelper.validateAndSanitizeRecipeCategoryDTO(recipeCategoryDTO);
+        RecipeCategoryDTO sanitizedRecipeCategoryDTO = RecipeCategoryValidatorHelper.validateAndSanitize(recipeCategoryDTO);
 
         RecipeCategory updatedRecipeCategory = dtoConverter.convertRecipeCategoryToEntity(sanitizedRecipeCategoryDTO);
         updatedRecipeCategory.setId(existingRecipeCategory.getId());

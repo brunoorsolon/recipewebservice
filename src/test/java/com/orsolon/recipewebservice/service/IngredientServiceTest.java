@@ -3,18 +3,25 @@ package com.orsolon.recipewebservice.service;
 import com.orsolon.recipewebservice.dto.IngredientDTO;
 import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.repository.IngredientRepository;
+import com.orsolon.recipewebservice.service.validator.IngredientValidatorHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@ActiveProfiles("test")
 public class IngredientServiceTest {
 
     private IngredientService ingredientService;
@@ -35,15 +42,15 @@ public class IngredientServiceTest {
 
     @Test
     public void testCreateIngredientWithValidData() {
-        // Create an IngredientDTO List
+        // Create an IngredientDTO
         IngredientDTO mockIngredientDTO = createMockIngredientDTO();
 
-        // Create an Ingredient List
+        // Create an Ingredient
         Ingredient mockIngredient = createMockIngredient();
 
-        try (MockedStatic<EntityValidatorHelper> mockedEntityValidatorHelper = Mockito.mockStatic(EntityValidatorHelper.class)) {
+        try (MockedStatic<IngredientValidatorHelper> mockedIngredientValidatorHelper = Mockito.mockStatic(IngredientValidatorHelper.class)) {
             // Mock the necessary methods
-            mockedEntityValidatorHelper.when(() -> EntityValidatorHelper.validateAndSanitizeIngredientDTO(mockIngredientDTO)).thenReturn(mockIngredientDTO);
+            mockedIngredientValidatorHelper.when(() -> IngredientValidatorHelper.validateAndSanitize(mockIngredientDTO)).thenReturn(mockIngredientDTO);
             Mockito.when(ingredientRepository.save(Mockito.any(Ingredient.class))).thenReturn(mockIngredient);
             Mockito.when(dtoConverter.convertIngredientToEntity(mockIngredientDTO)).thenReturn(mockIngredient);
             Mockito.when(dtoConverter.convertIngredientToDTO(Mockito.any(Ingredient.class))).thenReturn(mockIngredientDTO);

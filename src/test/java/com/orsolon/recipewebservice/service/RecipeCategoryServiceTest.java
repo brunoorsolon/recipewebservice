@@ -3,18 +3,25 @@ package com.orsolon.recipewebservice.service;
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
+import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@ActiveProfiles("test")
 public class RecipeCategoryServiceTest {
 
     private RecipeCategoryService recipeCategoryService;
@@ -35,15 +42,15 @@ public class RecipeCategoryServiceTest {
 
     @Test
     public void testCreateRecipeCategoryWithValidData() {
-        // Create a RecipeCategoryDTO List
+        // Create a RecipeCategoryDTO
         RecipeCategoryDTO mockRecipeCategoryDTO = createMockRecipeCategoryDTO();
 
-        // Create a RecipeCategory List
+        // Create a RecipeCategory
         RecipeCategory mockRecipeCategory = createMockRecipeCategory();
 
-        try (MockedStatic<EntityValidatorHelper> mockedEntityValidatorHelper = Mockito.mockStatic(EntityValidatorHelper.class)) {
+        try (MockedStatic<RecipeCategoryValidatorHelper> mockedRecipeCategoryValidatorHelper = Mockito.mockStatic(RecipeCategoryValidatorHelper.class)) {
             // Mock the necessary methods
-            mockedEntityValidatorHelper.when(() -> EntityValidatorHelper.validateAndSanitizeRecipeCategoryDTO(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategoryDTO);
+            mockedRecipeCategoryValidatorHelper.when(() -> RecipeCategoryValidatorHelper.validateAndSanitize(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategoryDTO);
             Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
             Mockito.when(dtoConverter.convertRecipeCategoryToEntity(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategory);
             Mockito.when(dtoConverter.convertRecipeCategoryToDTO(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
@@ -54,10 +61,10 @@ public class RecipeCategoryServiceTest {
             // Capture the argument passed to recipeCategoryRepository.save
             Mockito.verify(recipeCategoryRepository, Mockito.times(1)).save(recipeCategoryCaptor.capture());
 
-            // Verify that the captured argument is equal to the expected Ingredient object
+            // Verify that the captured argument is equal to the expected RecipeCategory object
             assertEquals(mockRecipeCategory, recipeCategoryCaptor.getValue());
 
-            // Verify that the returned IngredientDTO is the expected one
+            // Verify that the returned RecipeCategoryDTO is the expected one
             assertEquals(mockRecipeCategoryDTO, createdRecipeCategoryDTO);
         }
     }

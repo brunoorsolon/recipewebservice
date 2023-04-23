@@ -9,6 +9,7 @@ import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.model.Recipe;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeRepository;
+import com.orsolon.recipewebservice.service.validator.RecipeValidatorHelper;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -87,17 +88,15 @@ public class RecipeServiceImpl implements RecipeService {
             throw new RecipeAlreadyExistsException("A recipe with the same ID already exists.");
         }
         // Validate and sanitize the input RecipeDTO object
-        RecipeDTO sanitizedRecipeDTO = EntityValidatorHelper.validateAndSanitizeRecipeDTO(recipeDTO);
+        RecipeDTO sanitizedRecipeDTO = RecipeValidatorHelper.validateAndSanitize(recipeDTO);
 
         // Convert the sanitized RecipeDTO to a Recipe entity
         Recipe recipeToSave = dtoConverter.convertRecipeToEntity(sanitizedRecipeDTO);
 
         // Persist associated RecipeCategory objects first
         recipeToSave.getCategories().forEach(category -> {
-            if (category.getId() == null) {
-                RecipeCategoryDTO savedCategory = recipeCategoryService.create(dtoConverter.convertRecipeCategoryToDTO(category));
-                category.setId(savedCategory.getId());
-            }
+            RecipeCategoryDTO savedCategory = recipeCategoryService.create(dtoConverter.convertRecipeCategoryToDTO(category));
+            category.setId(savedCategory.getId());
         });
 
         // Set the relationship between Recipe and Ingredient
@@ -118,7 +117,7 @@ public class RecipeServiceImpl implements RecipeService {
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
 
         // Validate and sanitize the input RecipeDTO object
-        RecipeDTO sanitizedRecipeDTO = EntityValidatorHelper.validateAndSanitizeRecipeDTO(recipeDTO);
+        RecipeDTO sanitizedRecipeDTO = RecipeValidatorHelper.validateAndSanitize(recipeDTO);
 
         Recipe updatedRecipe = dtoConverter.convertRecipeToEntity(sanitizedRecipeDTO);
         updatedRecipe.setId(existingRecipe.getId());
@@ -136,7 +135,7 @@ public class RecipeServiceImpl implements RecipeService {
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
 
         // Sanitize the updates before applying them
-        Map<String, Object> sanitizedUpdates = EntityValidatorHelper.validateAndSanitizeUpdates(updates);
+        Map<String, Object> sanitizedUpdates = RecipeValidatorHelper.validateAndSanitizeUpdates(updates);
 
         sanitizedUpdates.forEach((key, value) -> {
             switch (key) {
