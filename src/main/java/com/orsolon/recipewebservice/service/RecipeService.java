@@ -8,6 +8,7 @@ import java.util.Map;
 public interface RecipeService {
     List<RecipeDTO> findAll();
     RecipeDTO findById(Long id);
+    RecipeDTO findByTitle(String title);
     List<RecipeDTO> findByCategory(Long categoryId);
     List<RecipeDTO> search(String query);
     RecipeDTO create(RecipeDTO recipeDTO);
