@@ -3,111 +3,91 @@ package com.orsolon.recipewebservice.service;
 import com.orsolon.recipewebservice.dto.IngredientDTO;
 import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.repository.IngredientRepository;
+import com.orsolon.recipewebservice.service.validator.IngredientValidatorHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@ActiveProfiles("test")
 public class IngredientServiceTest {
 
     private IngredientService ingredientService;
     private IngredientRepository ingredientRepository;
     private DTOConverter dtoConverter;
+    @Captor
+    private ArgumentCaptor<Ingredient> ingredientCaptor;
 
     @BeforeEach
     void setUp() {
+        // Mock
         this.ingredientRepository = Mockito.mock(IngredientRepository.class);
         this.dtoConverter = Mockito.mock(DTOConverter.class);
+
+        // Inject Mocks
         this.ingredientService = new IngredientServiceImpl(ingredientRepository, dtoConverter);
     }
 
     @Test
-    public void testCreateRecipeCategory() {
-        // Create a RecipeCategoryDTO List
-        List<IngredientDTO> mockIngredientDTOList = createMockIngredientDTOList();
+    public void testCreateIngredientWithValidData() {
+        // Create an IngredientDTO
+        IngredientDTO mockIngredientDTO = createMockIngredientDTO();
 
-        // Create a RecipeCategory List
-        List<Ingredient> mockIngredientList = createMockIngredientList();
+        // Create an Ingredient
+        Ingredient mockIngredient = createMockIngredient();
 
-        for (int c = 0; c < mockIngredientDTOList.size(); c++) {
-            IngredientDTO mockIngredientDTO = mockIngredientDTOList.get(c);
-            Ingredient mockIngredient = mockIngredientList.get(c);
-
+        try (MockedStatic<IngredientValidatorHelper> mockedIngredientValidatorHelper = Mockito.mockStatic(IngredientValidatorHelper.class)) {
             // Mock the necessary methods
-            Mockito.when(ingredientService.create(Mockito.any(IngredientDTO.class))).thenReturn(mockIngredientDTO);
+            mockedIngredientValidatorHelper.when(() -> IngredientValidatorHelper.validateAndSanitize(mockIngredientDTO)).thenReturn(mockIngredientDTO);
             Mockito.when(ingredientRepository.save(Mockito.any(Ingredient.class))).thenReturn(mockIngredient);
-            Mockito.when(dtoConverter.convertIngredientToEntity(Mockito.any(IngredientDTO.class))).thenReturn(mockIngredient);
+            Mockito.when(dtoConverter.convertIngredientToEntity(mockIngredientDTO)).thenReturn(mockIngredient);
             Mockito.when(dtoConverter.convertIngredientToDTO(Mockito.any(Ingredient.class))).thenReturn(mockIngredientDTO);
 
             // Call the create method
-            ingredientService.create(mockIngredientDTO);
+            IngredientDTO createdIngredientDTO = ingredientService.create(mockIngredientDTO);
+
+            // Capture the argument passed to ingredientRepository.save
+            Mockito.verify(ingredientRepository, Mockito.times(1)).save(ingredientCaptor.capture());
+
+            // Verify that the captured argument is equal to the expected Ingredient object
+            assertEquals(mockIngredient, ingredientCaptor.getValue());
+
+            // Verify that the returned IngredientDTO is the expected one
+            assertEquals(mockIngredientDTO, createdIngredientDTO);
         }
-
-        // Verify that the recipeCategoryRepository.save method was not called
-        Mockito.verify(ingredientRepository, Mockito.times(mockIngredientDTOList.size())).save(Mockito.any(Ingredient.class));
     }
 
-    // Helper method to create a mock RecipeDTO object with a specified category ID
-    private List<IngredientDTO> createMockIngredientDTOList() {
-        List<IngredientDTO> ingredientDTOList = new ArrayList<>();
-        ingredientDTOList.add(
-                IngredientDTO.builder()
+    // Helper method to create a mock IngredientDTO object
+    private IngredientDTO createMockIngredientDTO() {
+        return IngredientDTO.builder()
                         .id(1L)
                         .quantity("1")
                         .title("Title 1")
                         .unit("mock")
                         .item("Mock Ingredient 1")
-                        .build());
-        ingredientDTOList.add(
-                IngredientDTO.builder()
-                        .id(2L)
-                        .quantity("2")
-                        .title("Title 2")
-                        .unit("mock")
-                        .item("Mock Ingredient 2")
-                        .build());
-        ingredientDTOList.add(
-                IngredientDTO.builder()
-                        .id(3L)
-                        .quantity("3")
-                        .title("Title 3")
-                        .unit("mock")
-                        .item("Mock Ingredient 3")
-                        .build());
-        return ingredientDTOList;
+                        .build();
     }
-    // Helper method to create a mock Recipe object with a specified category ID
-    private List<Ingredient> createMockIngredientList() {
-        List<Ingredient> ingredientList = new ArrayList<>();
-        ingredientList.add(
-                Ingredient.builder()
+    // Helper method to create a mock Ingredient object
+    private Ingredient createMockIngredient() {
+        return Ingredient.builder()
                         .id(1L)
                         .quantity("1")
                         .title("Title 1")
                         .unit("mock")
                         .item("Mock Ingredient 1")
-                        .build());
-        ingredientList.add(
-                Ingredient.builder()
-                        .id(2L)
-                        .quantity("2")
-                        .title("Title 2")
-                        .unit("mock")
-                        .item("Mock Ingredient 2")
-                        .build());
-        ingredientList.add(
-                Ingredient.builder()
-                        .id(3L)
-                        .quantity("3")
-                        .title("Title 3")
-                        .unit("mock")
-                        .item("Mock Ingredient 3")
-                        .build());
-        return ingredientList;
+                        .build();
+
     }
 }

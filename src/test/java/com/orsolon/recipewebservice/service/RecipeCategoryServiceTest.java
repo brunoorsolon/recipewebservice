@@ -3,83 +3,84 @@ package com.orsolon.recipewebservice.service;
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
+import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@ActiveProfiles("test")
 public class RecipeCategoryServiceTest {
 
     private RecipeCategoryService recipeCategoryService;
     private RecipeCategoryRepository recipeCategoryRepository;
     private DTOConverter dtoConverter;
+    @Captor
+    private ArgumentCaptor<RecipeCategory> recipeCategoryCaptor;
 
     @BeforeEach
     void setUp() {
+        // Mock
         this.recipeCategoryRepository = Mockito.mock(RecipeCategoryRepository.class);
         this.dtoConverter = Mockito.mock(DTOConverter.class);
+
+        // Inject Mocks
         this.recipeCategoryService = new RecipeCategoryServiceImpl(recipeCategoryRepository, dtoConverter);
     }
 
     @Test
-    public void testCreateRecipeCategory() {
-        // Create a RecipeCategoryDTO List
-        List<RecipeCategoryDTO> mockRecipeCategoryDTOList = createMockRecipeCategoryDTOList();
+    public void testCreateRecipeCategoryWithValidData() {
+        // Create a RecipeCategoryDTO
+        RecipeCategoryDTO mockRecipeCategoryDTO = createMockRecipeCategoryDTO();
 
-        // Create a RecipeCategory List
-        List<RecipeCategory> mockRecipeCategoryList = createMockRecipeCategoryList();
+        // Create a RecipeCategory
+        RecipeCategory mockRecipeCategory = createMockRecipeCategory();
 
-        for (int c = 0; c < mockRecipeCategoryDTOList.size(); c++) {
-            RecipeCategoryDTO mockRecipeCategoryDTO = mockRecipeCategoryDTOList.get(c);
-            RecipeCategory mockRecipeCategory = mockRecipeCategoryList.get(c);
-
+        try (MockedStatic<RecipeCategoryValidatorHelper> mockedRecipeCategoryValidatorHelper = Mockito.mockStatic(RecipeCategoryValidatorHelper.class)) {
             // Mock the necessary methods
-            Mockito.when(recipeCategoryService.create(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategoryDTO);
+            mockedRecipeCategoryValidatorHelper.when(() -> RecipeCategoryValidatorHelper.validateAndSanitize(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategoryDTO);
             Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
-            Mockito.when(dtoConverter.convertRecipeCategoryToEntity(Mockito.any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
+            Mockito.when(dtoConverter.convertRecipeCategoryToEntity(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategory);
             Mockito.when(dtoConverter.convertRecipeCategoryToDTO(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
 
             // Call the create method
-            recipeCategoryService.create(mockRecipeCategoryDTO);
+            RecipeCategoryDTO createdRecipeCategoryDTO = recipeCategoryService.create(mockRecipeCategoryDTO);
+
+            // Capture the argument passed to recipeCategoryRepository.save
+            Mockito.verify(recipeCategoryRepository, Mockito.times(1)).save(recipeCategoryCaptor.capture());
+
+            // Verify that the captured argument is equal to the expected RecipeCategory object
+            assertEquals(mockRecipeCategory, recipeCategoryCaptor.getValue());
+
+            // Verify that the returned RecipeCategoryDTO is the expected one
+            assertEquals(mockRecipeCategoryDTO, createdRecipeCategoryDTO);
         }
-
-        // Verify that the recipeCategoryRepository.save method was not called
-        Mockito.verify(recipeCategoryRepository, Mockito.times(mockRecipeCategoryDTOList.size())).save(Mockito.any(RecipeCategory.class));
     }
 
-    // Helper method to create a mock RecipeDTO object with a specified category ID
-    private List<RecipeCategoryDTO> createMockRecipeCategoryDTOList() {
-        List<RecipeCategoryDTO> recipeCategoryDTOList = new ArrayList<>();
-        recipeCategoryDTOList.add(
-                RecipeCategoryDTO.builder()
-                        .id(null)
-                        .name("Mock category NULL")
-                        .build());
-        recipeCategoryDTOList.add(
-                RecipeCategoryDTO.builder()
+    // Helper method to create a mock RecipeCategoryDTO object
+    private RecipeCategoryDTO createMockRecipeCategoryDTO() {
+        return RecipeCategoryDTO.builder()
                         .id(1L)
                         .name("Mock category 1")
-                        .build());
-        return recipeCategoryDTOList;
+                        .build();
     }
-    // Helper method to create a mock Recipe object with a specified category ID
-    private List<RecipeCategory> createMockRecipeCategoryList() {
-        List<RecipeCategory> recipeCategoryList = new ArrayList<>();
-        recipeCategoryList.add(
-                RecipeCategory.builder()
-                        .id(null)
-                        .name("Mock category NULL")
-                        .build());
-        recipeCategoryList.add(
-                RecipeCategory.builder()
-                        .id(1L)
-                        .name("Mock category 1")
-                        .build());
-        return recipeCategoryList;
+    // Helper method to create a mock RecipeCategory object
+    private RecipeCategory createMockRecipeCategory() {
+        return RecipeCategory.builder()
+                .id(1L)
+                .name("Mock category 1")
+                .build();
     }
 }

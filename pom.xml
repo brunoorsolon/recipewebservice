@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.orsolon</groupId>
 	<artifactId>recipewebservice</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>Recipe Web Service</name>
 	<description>This project is a Java-based RESTful API for managing and serving recipes, built to support a Mendix-based web application. The motivation behind this project was to create a back-end service that allows web designers to retrieve, filter, and add recipes to the system. The project solves the problem of efficiently organizing and serving recipes through a RESTful API.</description>
 	<properties>
@@ -69,6 +69,27 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.15.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>7.7.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+			<version>2.1.0</version>
 		</dependency>
 	</dependencies>
 
