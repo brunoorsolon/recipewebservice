@@ -12,5 +12,7 @@ import java.util.Optional;
 public interface RecipeRepository extends JpaRepository<Recipe,  Long>, JpaSpecificationExecutor<Recipe> {
     List<Recipe> findByCategories_Id(Long categoryId);
 
+    List<Recipe> findAllByOrderByTitleAsc();
+
     Optional<Recipe> findByTitle(String title);
 }

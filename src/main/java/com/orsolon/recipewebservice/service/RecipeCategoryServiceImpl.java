@@ -32,7 +32,7 @@ public class RecipeCategoryServiceImpl implements RecipeCategoryService {
 
     @Override
     public List<RecipeCategoryDTO> findAll() {
-        return recipeCategoryRepository.findAll().stream()
+        return recipeCategoryRepository.findAllByOrderByNameAsc().stream()
                 .map(dtoConverter::convertRecipeCategoryToDTO)
                 .collect(Collectors.toList());
     }
