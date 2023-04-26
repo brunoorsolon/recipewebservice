@@ -3,6 +3,7 @@ package com.orsolon.recipewebservice.service;
 import com.orsolon.recipewebservice.dto.IngredientDTO;
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.dto.RecipeDTO;
+import com.orsolon.recipewebservice.exception.InvalidFieldValueException;
 import com.orsolon.recipewebservice.exception.RecipeAlreadyExistsException;
 import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
 import com.orsolon.recipewebservice.model.Ingredient;
@@ -45,14 +46,18 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public RecipeDTO findById(Long id) {
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + id));
+    public RecipeDTO findById(Long recipeId) {
+        validateIdParameter(recipeId);
+
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
         return dtoConverter.convertRecipeToDTO(recipe);
     }
 
     @Override
     public RecipeDTO findByTitle(String title) {
+        validateStringParameter(title);
+
         Recipe recipe = recipeRepository.findByTitle(title)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with titel: " + title));
         return dtoConverter.convertRecipeToDTO(recipe);
@@ -60,6 +65,8 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public List<RecipeDTO> findByCategory(Long categoryId) {
+        validateIdParameter(categoryId);
+
         List<Recipe> recipes = recipeRepository.findByCategories_Id(categoryId);
         return recipes.stream()
                 .map(dtoConverter::convertRecipeToDTO)
@@ -68,6 +75,8 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public List<RecipeDTO> search(String query) {
+        validateStringParameter(query);
+
         Specification<Recipe> searchSpec = new Specification<Recipe>() {
             @Override
             public Predicate toPredicate(Root<Recipe> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -86,24 +95,25 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO create(RecipeDTO recipeDTO) {
-        Optional<Recipe> existingRecipe;
-        if (recipeDTO.getId() != null) {
-            existingRecipe = recipeRepository.findById(recipeDTO.getId());
-            if (existingRecipe.isPresent()) {
-                throw new RecipeAlreadyExistsException("A recipe with the same ID already exists.");
-            }
-        }
-        if (recipeDTO.getTitle() != null) {
-            existingRecipe = recipeRepository.findByTitle(recipeDTO.getTitle());
-            if (existingRecipe.isPresent()) {
-                throw new RecipeAlreadyExistsException("A recipe with the same Title already exists.");
-            }
-        }
         // Validate and sanitize the input RecipeDTO object
         RecipeDTO sanitizedRecipeDTO = RecipeValidatorHelper.validateAndSanitize(recipeDTO);
 
         // Convert the sanitized RecipeDTO to a Recipe entity
         Recipe recipeToSave = dtoConverter.convertRecipeToEntity(sanitizedRecipeDTO);
+
+        Optional<Recipe> existingRecipe;
+        if (recipeDTO.getId() != null) {
+            existingRecipe = recipeRepository.findById(recipeToSave.getId());
+            if (existingRecipe.isPresent()) {
+                throw new RecipeAlreadyExistsException("A recipe with the same ID already exists.");
+            }
+        }
+        if (recipeDTO.getTitle() != null) {
+            existingRecipe = recipeRepository.findByTitle(recipeToSave.getTitle());
+            if (existingRecipe.isPresent()) {
+                throw new RecipeAlreadyExistsException("A recipe with the same Title already exists.");
+            }
+        }
 
         // Persist associated RecipeCategory objects first
         recipeToSave.getCategories().forEach(category -> {
@@ -125,6 +135,8 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO update(Long recipeId, RecipeDTO recipeDTO) {
+        validateIdParameter(recipeId);
+
         Recipe existingRecipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
 
@@ -143,6 +155,8 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO partialUpdate(Long recipeId, Map<String, Object> updates) {
+        validateIdParameter(recipeId);
+
         Recipe existingRecipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
 
@@ -176,9 +190,22 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public void delete(Long recipeId) {
+        validateIdParameter(recipeId);
+
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
         recipeRepository.delete(recipe);
     }
 
+    private void validateIdParameter(Long id) {
+        if (id == null || id <= 0) {
+            throw new InvalidFieldValueException("Invalid value: " + id);
+        }
+    }
+
+    private void validateStringParameter(String string) {
+        if (string == null || string.isEmpty()) {
+            throw new InvalidFieldValueException("Invalid value: " + string);
+        }
+    }
 }
