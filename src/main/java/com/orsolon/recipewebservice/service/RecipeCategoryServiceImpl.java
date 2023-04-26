@@ -2,7 +2,6 @@ package com.orsolon.recipewebservice.service;
 
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.exception.RecipeCategoryNotFoundException;
-import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
@@ -32,7 +31,7 @@ public class RecipeCategoryServiceImpl implements RecipeCategoryService {
 
     @Override
     public List<RecipeCategoryDTO> findAll() {
-        return recipeCategoryRepository.findAll().stream()
+        return recipeCategoryRepository.findAllByOrderByNameAsc().stream()
                 .map(dtoConverter::convertRecipeCategoryToDTO)
                 .collect(Collectors.toList());
     }
@@ -40,7 +39,7 @@ public class RecipeCategoryServiceImpl implements RecipeCategoryService {
     @Override
     public RecipeCategoryDTO findById(Long id) {
         RecipeCategory recipeCategory = recipeCategoryRepository.findById(id)
-                .orElseThrow(() -> new RecipeNotFoundException("Recipe Category not found with id: " + id));
+                .orElseThrow(() -> new RecipeCategoryNotFoundException("Recipe Category not found with id: " + id));
         return dtoConverter.convertRecipeCategoryToDTO(recipeCategory);
     }
 
