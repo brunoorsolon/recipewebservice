@@ -1,5 +1,6 @@
 package com.orsolon.recipewebservice.exception;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest
 @ContextConfiguration(classes = {GlobalExceptionHandlerTest.TestController.class, GlobalExceptionHandler.class})
+@DisplayName("Global Exception Handler Test")
 public class GlobalExceptionHandlerTest {
 
     private static final String RECIPE_ALREADY_EXISTS_MSG = "A recipe with the same Title already exists";
@@ -28,72 +30,22 @@ public class GlobalExceptionHandlerTest {
     private static final String INVALID_FIELD_VALUE_MSG = "Invalid field value";
     private static final String INVALID_FIELD_MSG = "Invalid field: test";
 
-
-
     @Autowired
     private MockMvc mockMvc;
 
-    @Configuration
-    @Import(GlobalExceptionHandler.class)
-    static class Config {
-    }
-
-    @Controller
-    public static class TestController {
-        @GetMapping("/throwRecipeAlreadyExistsException")
-        public void throwRecipeAlreadyExistsException() {
-            throw new RecipeAlreadyExistsException(RECIPE_ALREADY_EXISTS_MSG);
-        }
-        @GetMapping("/throwRecipeNotFoundException")
-        public void throwRecipeNotFoundException() {
-            throw new RecipeNotFoundException(RECIPE_NOT_FOUND_MSG);
-        }
-
-        @GetMapping("/throwRecipeCategoryNotFoundException")
-        public void throwRecipeCategoryNotFoundException() {
-            throw new RecipeCategoryNotFoundException(RECIPE_CATEGORY_NOT_FOUND_MSG);
-        }
-
-        @GetMapping("/throwInvalidFieldValueException")
-        public void throwInvalidFieldValueException() {
-            throw new InvalidFieldValueException(INVALID_FIELD_VALUE_MSG);
-        }
-
-        @GetMapping("/throwInvalidFieldException")
-        public void throwInvalidFieldException() {
-            throw new InvalidFieldException(INVALID_FIELD_MSG);
-        }
+    @Test
+    @DisplayName("Handle InvalidFieldException should return status bad request")
+    public void handleInvalidFieldException_ShouldReturnStatusBadRequest() throws Exception {
+        mockMvc.perform(get("/throwInvalidFieldException"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.error").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(INVALID_FIELD_MSG));
     }
 
     @Test
-    public void testHandleRecipeAlreadyExistsException() throws Exception {
-        mockMvc.perform(get("/throwRecipeAlreadyExistsException"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
-                .andExpect(jsonPath("$.error").value(HttpStatus.CONFLICT.getReasonPhrase()))
-                .andExpect(jsonPath("$.message").value(RECIPE_ALREADY_EXISTS_MSG));
-    }
-
-    @Test
-    public void testHandleRecipeNotFoundException() throws Exception {
-        mockMvc.perform(get("/throwRecipeNotFoundException"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
-                .andExpect(jsonPath("$.error").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
-                .andExpect(jsonPath("$.message").value(RECIPE_NOT_FOUND_MSG));
-    }
-
-    @Test
-    public void testHandleRecipeCategoryNotFoundException() throws Exception {
-        mockMvc.perform(get("/throwRecipeCategoryNotFoundException"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
-                .andExpect(jsonPath("$.error").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
-                .andExpect(jsonPath("$.message").value(RECIPE_CATEGORY_NOT_FOUND_MSG));
-    }
-
-    @Test
-    public void testHandleInvalidFieldValueException() throws Exception {
+    @DisplayName("Handle InvalidFieldValueException should return status bad request")
+    public void handleInvalidFieldValueException_ShouldReturnStatusBadRequest() throws Exception {
         mockMvc.perform(get("/throwInvalidFieldValueException"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
@@ -102,12 +54,66 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void testHandleInvalidFieldException() throws Exception {
-        mockMvc.perform(get("/throwInvalidFieldException"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.error").value(HttpStatus.BAD_REQUEST.getReasonPhrase()))
-                .andExpect(jsonPath("$.message").value(INVALID_FIELD_MSG));
+    @DisplayName("Handle RecipeAlreadyExistsException should return status conflict")
+    public void handleRecipeAlreadyExistsException_ShouldReturnStatusConflict() throws Exception {
+        mockMvc.perform(get("/throwRecipeAlreadyExistsException"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
+                .andExpect(jsonPath("$.error").value(HttpStatus.CONFLICT.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(RECIPE_ALREADY_EXISTS_MSG));
+    }
+
+    @Test
+    @DisplayName("Handle RecipeCategoryNotFoundException should return status not found")
+    public void handleRecipeCategoryNotFoundException_ShouldReturnStatusNotFound() throws Exception {
+        mockMvc.perform(get("/throwRecipeCategoryNotFoundException"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                .andExpect(jsonPath("$.error").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(RECIPE_CATEGORY_NOT_FOUND_MSG));
+    }
+
+    @Test
+    @DisplayName("Handle RecipeNotFoundException should return status not found")
+    public void handleRecipeNotFoundException_ShouldReturnStatusNotFound() throws Exception {
+        mockMvc.perform(get("/throwRecipeNotFoundException"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                .andExpect(jsonPath("$.error").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
+                .andExpect(jsonPath("$.message").value(RECIPE_NOT_FOUND_MSG));
+    }
+
+    @Configuration
+    @Import(GlobalExceptionHandler.class)
+    static class Config {
+    }
+
+    @Controller
+    public static class TestController {
+        @GetMapping("/throwInvalidFieldException")
+        public void throwInvalidFieldException() {
+            throw new InvalidFieldException(INVALID_FIELD_MSG);
+        }
+
+        @GetMapping("/throwInvalidFieldValueException")
+        public void throwInvalidFieldValueException() {
+            throw new InvalidFieldValueException(INVALID_FIELD_VALUE_MSG);
+        }
+
+        @GetMapping("/throwRecipeAlreadyExistsException")
+        public void throwRecipeAlreadyExistsException() {
+            throw new RecipeAlreadyExistsException(RECIPE_ALREADY_EXISTS_MSG);
+        }
+
+        @GetMapping("/throwRecipeCategoryNotFoundException")
+        public void throwRecipeCategoryNotFoundException() {
+            throw new RecipeCategoryNotFoundException(RECIPE_CATEGORY_NOT_FOUND_MSG);
+        }
+
+        @GetMapping("/throwRecipeNotFoundException")
+        public void throwRecipeNotFoundException() {
+            throw new RecipeNotFoundException(RECIPE_NOT_FOUND_MSG);
+        }
     }
 
 }

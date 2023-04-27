@@ -1,5 +1,6 @@
 package com.orsolon.recipewebservice.dto;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -7,10 +8,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@DisplayName("Recipe DTO Test")
 public class RecipeDTOTest {
 
     @Test
-    public void testRecipeDTOBuilder() {
+    @DisplayName("Initialize with valid data should return RecipeDTO")
+    public void initialize_WithValidData_ShouldReturnRecipeDTO() {
         List<IngredientDTO> ingredients = Arrays.asList(
                 IngredientDTO.builder().quantity("1 cup").unit("cup").item("Sugar").build(),
                 IngredientDTO.builder().quantity("2 cups").unit("cup").item("Flour").build()

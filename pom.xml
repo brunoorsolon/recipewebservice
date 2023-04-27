@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.orsolon</groupId>
 	<artifactId>recipewebservice</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>Recipe Web Service</name>
 	<description>This project is a Java-based RESTful API for managing and serving recipes, built to support a Mendix-based web application. The motivation behind this project was to create a back-end service that allows web designers to retrieve, filter, and add recipes to the system. The project solves the problem of efficiently organizing and serving recipes through a RESTful API.</description>
 	<properties>

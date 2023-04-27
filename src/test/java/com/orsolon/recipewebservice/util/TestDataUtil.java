@@ -204,7 +204,7 @@ public class TestDataUtil {
 
     // Reads from a JSON of sample Ingredients
     private static List<Map<String, String>> getAvailableIngredients() {
-        List<Map<String, String>> ingedientMaps = new ArrayList<>();
+        List<Map<String, String>> ingredientMaps = new ArrayList<>();
         try {
             // Load JSON file as a resource
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -212,13 +212,13 @@ public class TestDataUtil {
 
             // Parse JSON string into List<Map<String, String>>
             ObjectMapper objectMapper = new ObjectMapper();
-            ingedientMaps = objectMapper.readValue(categoriesJson.getInputStream(), new TypeReference<List<Map<String, String>>>(){});
+            ingredientMaps = objectMapper.readValue(categoriesJson.getInputStream(), new TypeReference<List<Map<String, String>>>(){});
         }
         catch (IOException e) {
             System.out.println("Ingredients JSON not found. Will return empty map.");
         }
 
-        return ingedientMaps;
+        return ingredientMaps;
     }
 
     // Helper method for the random item picking when generating sample data

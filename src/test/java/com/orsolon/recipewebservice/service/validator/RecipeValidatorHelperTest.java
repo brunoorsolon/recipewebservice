@@ -4,6 +4,7 @@ import com.orsolon.recipewebservice.dto.IngredientDTO;
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.dto.RecipeDTO;
 import com.orsolon.recipewebservice.exception.InvalidFieldValueException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,10 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@DisplayName("Recipe Validator Helper Test")
 public class RecipeValidatorHelperTest {
 
     @Test
-    public void validateAndSanitize_goodPath() {
+    @DisplayName("Validate and sanitize should throw exception when Recipe path is invalid")
+    public void validateAndSanitize_ShouldValidateAndSanitizeRecipeWithValidPath() {
         List<IngredientDTO> ingredients = Arrays.asList(
                 IngredientDTO.builder().quantity("1 cup").unit("cup").item("Sugar").build(),
                 IngredientDTO.builder().quantity("2 cups").unit("cup").item("Flour").build()
@@ -41,7 +44,8 @@ public class RecipeValidatorHelperTest {
     }
 
     @Test
-    public void validateAndSanitize_badPath_invalidFields() {
+    @DisplayName("Validate and sanitize should validate and sanitize Recipe with valid path")
+    public void validateAndSanitize_ShouldThrowExceptionWhenRecipePathIsInvalid() {
         List<IngredientDTO> ingredients = Arrays.asList(
                 IngredientDTO.builder().quantity("1 cup").unit("cup").item("Sugar").build(),
                 IngredientDTO.builder().quantity("2 cups").unit("cup").item("Flour").build()

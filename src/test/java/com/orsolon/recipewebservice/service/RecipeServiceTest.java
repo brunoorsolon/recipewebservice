@@ -9,6 +9,7 @@ import com.orsolon.recipewebservice.repository.RecipeRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
 import com.orsolon.recipewebservice.service.validator.RecipeValidatorHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ActiveProfiles("test")
+@DisplayName("Recipe Service Test")
 public class RecipeServiceTest {
 
     private RecipeService recipeService;
@@ -53,7 +55,8 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void testCreateRecipeCategoryWithNullId() {
+    @DisplayName("Create Recipe Category with null ID should create the Recipe and return status created")
+    public void createRecipeCategoryWithNullId_ShouldCreateRecipeAndReturnStatusCreated() {
         Mockito.reset(recipeRepository, recipeCategoryRepository, dtoConverter);
 
         // Create a RecipeDTO object with a category that has a null ID
@@ -94,7 +97,6 @@ public class RecipeServiceTest {
 
         // Verify that the captured argument is equal to the expected Recipe object
         assertEquals(mockRecipe, recipeCaptor.getValue());
-        //assertEquals(mockRecipeCategory, recipeCategoryCaptor.getValue());
 
         // Verify that the returned RecipeDTO is the expected one
         assertEquals(mockRecipeDTO, createdRecipeDTO);
@@ -102,7 +104,8 @@ public class RecipeServiceTest {
 
 
     @Test
-    public void testCreateRecipeCategoryWithNonNullId() {
+    @DisplayName("Create Recipe Category with non-null ID should create the Recipe and return status created")
+    public void createRecipeCategoryWithNonNullId_ShouldCreateRecipeAndReturnStatusCreated() {
         Mockito.reset(recipeRepository, recipeCategoryRepository, dtoConverter);
 
         // Create a RecipeDTO object with a category that has a null ID

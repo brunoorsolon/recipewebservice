@@ -46,7 +46,6 @@ public class RecipeCategoryControllerIntegrationTest {
     private final RecipeCategoryServiceImpl recipeCategoryService;
     private final RecipeServiceImpl recipeService;
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper;
 
     @Autowired
     public RecipeCategoryControllerIntegrationTest(RecipeCategoryServiceImpl recipeCategoryService, RecipeServiceImpl recipeService) {
@@ -56,7 +55,6 @@ public class RecipeCategoryControllerIntegrationTest {
 
     @BeforeEach
     public void setUp() {
-        this.objectMapper = new ObjectMapper();
         this.mockMvc = MockMvcBuilders.standaloneSetup(new RecipeCategoryController(recipeCategoryService), new GlobalExceptionHandler()).build();
     }
 
@@ -64,14 +62,10 @@ public class RecipeCategoryControllerIntegrationTest {
     @DisplayName("Find all should return categories and status OK")
     public void findAll_ShouldReturnCategoriesAndStatusOK() throws Exception {
         List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
-        List<RecipeCategoryDTO> mockCategoryList = new ArrayList<>();
 
-        mockCategoryList.addAll(
-                mockRecipeList.stream()
-                        .flatMap(recipe -> recipe.getCategories().stream())
-                        .sorted(Comparator.comparing(RecipeCategoryDTO::getName))
-                        .collect(Collectors.toList())
-        );
+        List<RecipeCategoryDTO> mockCategoryList = mockRecipeList.stream()
+                .flatMap(recipe -> recipe.getCategories().stream())
+                .sorted(Comparator.comparing(RecipeCategoryDTO::getName)).collect(Collectors.toList());
 
         MvcResult response = mockMvc.perform(get("/api/v1/categories")
                         .accept(MediaType.APPLICATION_JSON))
@@ -213,8 +207,7 @@ public class RecipeCategoryControllerIntegrationTest {
     private @NotNull List<RecipeDTO> setUp_AddListOfRecipesToTheDatabase(@NotNull List<RecipeDTO> mockRecipeList) {
         List<RecipeDTO> savedRecipes = new ArrayList<>();
         for (RecipeDTO mockRecipe : mockRecipeList) {
-            RecipeDTO recipeToSave = mockRecipe;
-            savedRecipes.add(recipeService.create(recipeToSave));
+            savedRecipes.add(recipeService.create(mockRecipe));
         }
         return savedRecipes;
     }

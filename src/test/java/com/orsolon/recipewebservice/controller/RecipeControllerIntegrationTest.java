@@ -3,14 +3,11 @@ package com.orsolon.recipewebservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orsolon.recipewebservice.dto.RecipeDTO;
 import com.orsolon.recipewebservice.exception.GlobalExceptionHandler;
-import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
-import com.orsolon.recipewebservice.repository.RecipeRepository;
-import com.orsolon.recipewebservice.service.DTOConverter;
-import com.orsolon.recipewebservice.service.RecipeCategoryServiceImpl;
 import com.orsolon.recipewebservice.service.RecipeServiceImpl;
 import com.orsolon.recipewebservice.util.TestDataUtil;
-import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,22 +36,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
+@Transactional
+@DisplayName("Recipe Controller Integration Test")
 public class RecipeControllerIntegrationTest {
 
-    private final DTOConverter dtoConverter;
-    private final RecipeRepository recipeRepository;
-    private final RecipeCategoryRepository recipeCategoryRepository;
-    private final RecipeCategoryServiceImpl recipeCategoryService;
     private final RecipeServiceImpl recipeService;
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
     @Autowired
-    public RecipeControllerIntegrationTest(DTOConverter dtoConverter, RecipeRepository recipeRepository, RecipeCategoryRepository recipeCategoryRepository, RecipeCategoryServiceImpl recipeCategoryService, RecipeServiceImpl recipeService) {
-        this.dtoConverter = dtoConverter;
-        this.recipeRepository = recipeRepository;
-        this.recipeCategoryRepository = recipeCategoryRepository;
-        this.recipeCategoryService = recipeCategoryService;
+    public RecipeControllerIntegrationTest(RecipeServiceImpl recipeService) {
         this.recipeService = recipeService;
     }
 
@@ -64,68 +56,23 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
-    @Transactional
-    public void findAll_ShouldReturnRecipesAndStatusOK() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
-
-        for (int i=0;i<mockRecipeList.size(); i++) {
-            mockMvc.perform(get("/api/v1/recipes")
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$["+i+"].id").value(mockRecipeList.get(i).getId()))
-                    .andExpect(jsonPath("$["+i+"].title").value(mockRecipeList.get(i).getTitle()))
-                    .andExpect(jsonPath("$["+i+"].yield").value(mockRecipeList.get(i).getYield()));
-        }
-    }
-
-    @Test
-    @Transactional
-    public void findById_WhenValidId_ShouldReturnRecipeAndStatusOK() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
-
-        for (int i=0;i<mockRecipeList.size(); i++) {
-            mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipeList.get(i).getId())
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.id").value(mockRecipeList.get(i).getId()))
-                    .andExpect(jsonPath("$.title").value(mockRecipeList.get(i).getTitle()))
-                    .andExpect(jsonPath("$.yield").value(mockRecipeList.get(i).getYield()));
-        }
-    }
-
-    @Test
-    @Transactional
-    public void findByCategory_WhenValidCategoryId_ShouldReturnRecipesAndStatusOK() throws Exception {
+    @DisplayName("Create - Invalid Recipe should return Status Bad Request")
+    public void create_WhenInvalidRecipe_ShouldReturnStatusBadRequest() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
 
-        mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
-                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
-                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
+        int newYield = -1;
+        mockRecipe.setYield(newYield);
+
+        mockMvc.perform(put("/api/v1/recipes/{id}", mockRecipe.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockRecipe)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
-    @Transactional
-    public void search_WhenValidQuery_ShouldReturnRecipesAndStatusOK() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
-        String query = mockRecipe.getCategories().get(0).getName();
-
-        mockMvc.perform(get("/api/v1/recipes/search").param("query", query)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
-                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
-                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
-    }
-
-    @Test
-    @Transactional
+    @DisplayName("Create - Valid Recipe should return Created Recipe and Status Created")
     public void create_WhenValidRecipe_ShouldReturnCreatedRecipeAndStatusCreated() throws Exception {
         RecipeDTO mockRecipe = TestDataUtil.createRecipeDTOList(false).get(0);
 
@@ -140,43 +87,43 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
-    @Transactional
-    public void update_WhenValidIdAndRecipe_ShouldReturnUpdatedRecipeAndStatusOK() throws Exception {
+    @DisplayName("Delete - Invalid ID should return Status Bad Request")
+    public void delete_WhenInvalidId_ShouldReturnStatusBadRequest() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
-        String newTitle = "Updated recipe title";
-        mockRecipe.setTitle(newTitle);
 
-        mockMvc.perform(put("/api/v1/recipes/{id}", mockRecipe.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockRecipe)))
+        // Making sure the Recipe exists
+        mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipe.getId())
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(mockRecipe.getId()))
-                .andExpect(jsonPath("$.title").value(newTitle))
+                .andExpect(jsonPath("$.title").value(mockRecipe.getTitle()))
                 .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
+
+        mockMvc.perform(delete("/api/v1/recipes/{id}", -99))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    @Transactional
-    public void partialUpdate_WhenValidIdAndFields_ShouldReturnUpdatedRecipeAndStatusOK() throws Exception {
+    @DisplayName("Delete - Non-Existing ID should return Status Not Found")
+    public void delete_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
-        String newTitle = "Updated recipe title";
-        mockRecipe.setTitle(newTitle);
 
-        mockMvc.perform(patch("/api/v1/recipes/{id}", mockRecipe.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Collections.singletonMap("title", newTitle))))
+        // Making sure the Recipe exists
+        mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipe.getId())
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(mockRecipe.getId()))
-                .andExpect(jsonPath("$.title").value(newTitle))
+                .andExpect(jsonPath("$.title").value(mockRecipe.getTitle()))
                 .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
+
+        mockMvc.perform(delete("/api/v1/recipes/{id}", 999999))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    @Transactional
+    @DisplayName("Delete - Valid ID should return Status No Content")
     public void delete_WhenValidId_ShouldReturnStatusNoContent() throws Exception {
         List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
 
@@ -189,7 +136,97 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
-    @Transactional
+    @DisplayName("Find All - Should return Recipes and Status OK")
+    public void findAll_ShouldReturnRecipesAndStatusOK() throws Exception {
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+
+        for (int i = 0; i < mockRecipeList.size(); i++) {
+            mockMvc.perform(get("/api/v1/recipes")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$[" + i + "].id").value(mockRecipeList.get(i).getId()))
+                    .andExpect(jsonPath("$[" + i + "].title").value(mockRecipeList.get(i).getTitle()))
+                    .andExpect(jsonPath("$[" + i + "].yield").value(mockRecipeList.get(i).getYield()));
+        }
+    }
+
+    @Test
+    @DisplayName("Find By Category - Invalid Category ID Parameter should return Status Bad Request")
+    public void findByCategory_WhenInvalidCategoryIdParameter_ShouldReturnStatusBadRequest() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+
+        // Making sure that the Database HAS data
+        mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
+
+        mockMvc.perform(get("/api/v1/recipes/category/{id}", -99)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Find By Category - Non-Existing Category ID should return Empty and Status OK")
+    public void findByCategory_WhenNonExistingCategoryId_ShouldReturnEmptyAndStatusOk() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+
+        // Making sure that the Database HAS data
+        mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
+
+        mockMvc.perform(get("/api/v1/recipes/category/{id}", 999999)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", is(Collections.emptyList())))
+                .andExpect(jsonPath("$.length()", is(0)));
+    }
+
+    @Test
+    @DisplayName("Find By Category - Valid Category ID should return Recipes and Status OK")
+    public void findByCategory_WhenValidCategoryId_ShouldReturnRecipesAndStatusOK() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+
+        mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
+    }
+
+    @Test
+    @DisplayName("Find By ID - Invalid ID Parameter should return Status Bad Request")
+    public void findById_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+
+        // Making sure that the Database HAS data
+        mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipeList.get(0).getId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(mockRecipeList.get(0).getId()))
+                .andExpect(jsonPath("$.title").value(mockRecipeList.get(0).getTitle()))
+                .andExpect(jsonPath("$.yield").value(mockRecipeList.get(0).getYield()));
+
+        mockMvc.perform(get("/api/v1/recipes/{id}", -99)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Find By ID - Non-Existing ID should return Status Not Found")
     public void findById_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
         List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
 
@@ -208,102 +245,23 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
-    @Transactional
-    public void findById_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
+    @DisplayName("Find By ID - Valid ID should return Recipe and Status OK")
+    public void findById_WhenValidId_ShouldReturnRecipeAndStatusOK() throws Exception {
         List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
 
-        // Making sure that the Database HAS data
-        mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipeList.get(0).getId())
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(mockRecipeList.get(0).getId()))
-                .andExpect(jsonPath("$.title").value(mockRecipeList.get(0).getTitle()))
-                .andExpect(jsonPath("$.yield").value(mockRecipeList.get(0).getYield()));
-
-        mockMvc.perform(get("/api/v1/recipes/{id}", 999999)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        for (RecipeDTO recipeDTO : mockRecipeList) {
+            mockMvc.perform(get("/api/v1/recipes/{id}", recipeDTO.getId())
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(recipeDTO.getId()))
+                    .andExpect(jsonPath("$.title").value(recipeDTO.getTitle()))
+                    .andExpect(jsonPath("$.yield").value(recipeDTO.getYield()));
+        }
     }
 
     @Test
-    @Transactional
-    public void findByCategory_WhenInvalidCategoryId_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
-
-        // Making sure that the Database HAS data
-        mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
-                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
-                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
-
-        // Testing the invalid ID parameter value
-        mockMvc.perform(get("/api/v1/recipes/category/{id}", -99)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        // Now testing with an invalid ID
-        mockMvc.perform(get("/api/v1/recipes/category/{id}", 999999)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", is(Collections.emptyList())))
-                .andExpect(jsonPath("$.length()", is(0)));
-    }
-
-    @Test
-    @Transactional
-    public void create_WhenInvalidRecipe_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
-
-        Integer newYield = -1;
-        mockRecipe.setYield(newYield);
-
-        mockMvc.perform(put("/api/v1/recipes/{id}", mockRecipe.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockRecipe)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    @Transactional
-    public void update_WhenNonExistentId_ShouldReturnStatusNotFound() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
-
-        String newTitle = "Updated recipe title";
-        mockRecipe.setTitle(newTitle);
-
-        mockMvc.perform(put("/api/v1/recipes/{id}", 999999999)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockRecipe)))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    @Transactional
-    public void update_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
-
-        String newTitle = "Updated recipe title";
-        mockRecipe.setTitle(newTitle);
-
-        mockMvc.perform(put("/api/v1/recipes/{id}", -99)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockRecipe)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    @Transactional
+    @DisplayName("Partial Update - Invalid ID Parameter should return Status Bad Request")
     public void partialUpdate_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
 
@@ -318,9 +276,8 @@ public class RecipeControllerIntegrationTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-
     @Test
-    @Transactional
+    @DisplayName("Partial Update - Non-Existing ID should return Status Not Found")
     public void partialUpdate_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
 
@@ -336,53 +293,159 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
-    @Transactional
-    public void delete_WhenInvalidId_ShouldReturnStatusBadRequest() throws Exception {
+    @DisplayName("Partial Update - Valid ID and Fields should return Updated Recipe and Status OK")
+    public void partialUpdate_WhenValidIdAndFields_ShouldReturnUpdatedRecipeAndStatusOK() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        String newTitle = "Updated recipe title";
+        mockRecipe.setTitle(newTitle);
 
-        // Making sure the Recipe exists
-        mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipe.getId())
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch("/api/v1/recipes/{id}", mockRecipe.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Collections.singletonMap("title", newTitle))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(mockRecipe.getId()))
-                .andExpect(jsonPath("$.title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$.title").value(newTitle))
                 .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
+    }
 
-        mockMvc.perform(delete("/api/v1/recipes/{id}", -99))
+    @Test
+    @DisplayName("Search - Invalid Query should return Status Bad Request")
+    public void search_WhenInvalidQuery_ShouldReturnStatusBadRequest() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+
+        // Making sure that the Database HAS data
+        String queryTitle = mockRecipe.getTitle();
+        mockMvc.perform(get("/api/v1/recipes/search").param("query", queryTitle)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
+
+        // Using empty (invalid) search term
+        String wrongQuery = "";
+        mockMvc.perform(get("/api/v1/recipes/search").param("query", wrongQuery)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @Transactional
-    public void delete_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
+    @DisplayName("Search - No Matches should return Empty and Status OK")
+    public void search_WhenNoMatches_ShouldReturnEmptyAndStatusOk() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
 
-        // Making sure the Recipe exists
-        mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipe.getId())
+        // Making sure that the Database HAS data
+        String queryTitle = mockRecipe.getTitle();
+        mockMvc.perform(get("/api/v1/recipes/search").param("query", queryTitle)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(mockRecipe.getId()))
-                .andExpect(jsonPath("$.title").value(mockRecipe.getTitle()))
-                .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
+                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
 
-        mockMvc.perform(delete("/api/v1/recipes/{id}", 999999))
-                .andExpect(status().isNotFound());
+        // Using non-existing search term
+        String wrongQuery = "-99_LOREM_IPSUM_NAME";
+        mockMvc.perform(get("/api/v1/recipes/search").param("query", wrongQuery)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", is(Collections.emptyList())))
+                .andExpect(jsonPath("$.length()", is(0)));
+
+    }
+
+    @Test
+    @DisplayName("Search - Valid Query should return Recipes and Status OK")
+    public void search_WhenValidQuery_ShouldReturnRecipesAndStatusOK() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+
+        // Search by Recipe title
+        String queryTitle = mockRecipe.getTitle();
+        mockMvc.perform(get("/api/v1/recipes/search").param("query", queryTitle)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
+
+        // Search by Recipe Category
+        String queryCategory = mockRecipe.getCategories().get(0).getName();
+        mockMvc.perform(get("/api/v1/recipes/search").param("query", queryCategory)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$[0].title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$[0].yield").value(mockRecipe.getYield()));
+    }
+
+    @Test
+    @DisplayName("Update - Invalid ID Parameter should return Status Bad Request")
+    public void update_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+
+        String newTitle = "Updated recipe title";
+        mockRecipe.setTitle(newTitle);
+
+        mockMvc.perform(put("/api/v1/recipes/{id}", -99)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockRecipe)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @DisplayName("Update - Non-Existent ID should return Status Not Found")
+    public void update_WhenNonExistentId_ShouldReturnStatusNotFound() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+
+        String newTitle = "Updated recipe title";
+        mockRecipe.setTitle(newTitle);
+
+        mockMvc.perform(put("/api/v1/recipes/{id}", 999999999)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockRecipe)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @DisplayName("Update - Valid ID and Recipe should return Updated Recipe and Status OK")
+    public void update_WhenValidIdAndRecipe_ShouldReturnUpdatedRecipeAndStatusOK() throws Exception {
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        String newTitle = "Updated recipe title";
+        mockRecipe.setTitle(newTitle);
+
+        mockMvc.perform(put("/api/v1/recipes/{id}", mockRecipe.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockRecipe)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(mockRecipe.getId()))
+                .andExpect(jsonPath("$.title").value(newTitle))
+                .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
     }
 
     // Helper method to pre-populate the database with a list of random recipes.
-    private List<RecipeDTO> setUp_AddListOfRecipesToTheDatabase(List<RecipeDTO> mockRecipeList) {
+    private @NotNull List<RecipeDTO> setUp_AddListOfRecipesToTheDatabase(@NotNull List<RecipeDTO> mockRecipeList) {
         List<RecipeDTO> savedRecipes = new ArrayList<>();
         for (RecipeDTO mockRecipe : mockRecipeList) {
-            RecipeDTO recipeToSave = mockRecipe;
-            savedRecipes.add(recipeService.create(recipeToSave));
+            savedRecipes.add(recipeService.create(mockRecipe));
         }
         return savedRecipes;
     }
 
     // Helper method to pre-populate the database with a single recipe.
-    private RecipeDTO setUp_AddSingleRecipeToTheDatabase(RecipeDTO mockRecipe) {
+    private @NotNull RecipeDTO setUp_AddSingleRecipeToTheDatabase(@NotNull RecipeDTO mockRecipe) {
         return recipeService.create(mockRecipe);
     }
+
 }

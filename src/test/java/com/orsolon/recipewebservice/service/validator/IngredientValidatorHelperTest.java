@@ -2,6 +2,7 @@ package com.orsolon.recipewebservice.service.validator;
 
 import com.orsolon.recipewebservice.dto.IngredientDTO;
 import com.orsolon.recipewebservice.exception.InvalidFieldValueException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,13 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Ingredient Validator Helper Test")
 public class IngredientValidatorHelperTest {
 
     @InjectMocks
     private IngredientValidatorHelper ingredientValidatorHelper;
 
     @Test
-    public void validateAndSanitize_good() {
+    @DisplayName("Validate and sanitize should throw exception when Ingredient item is invalid")
+    public void validateAndSanitize_ShouldValidateAndSanitizeIngredientWithValidData() {
         IngredientDTO input = IngredientDTO.builder()
                 .quantity("2")
                 .title(" <b>Test Title</b> ")
@@ -39,7 +42,8 @@ public class IngredientValidatorHelperTest {
     }
 
     @Test
-    public void validateAndSanitize_badQuantity() {
+    @DisplayName("Validate and sanitize should throw exception when Ingredient quantity is invalid")
+    public void validateAndSanitize_ShouldThrowExceptionWhenIngredientQuantityIsInvalid() {
         IngredientDTO input = IngredientDTO.builder()
                 .quantity("This is a very long quantity string that exceeds the maximum limit of 50 characters allowed for this field.")
                 .title("Test Title")
@@ -51,7 +55,8 @@ public class IngredientValidatorHelperTest {
     }
 
     @Test
-    public void validateAndSanitize_badItem() {
+    @DisplayName("Validate and sanitize should validate and sanitize Ingredient with valid data")
+    public void validateAndSanitize_ShouldThrowExceptionWhenIngredientItemIsInvalid() {
         IngredientDTO input = IngredientDTO.builder()
                 .quantity("2")
                 .title("Test Title")

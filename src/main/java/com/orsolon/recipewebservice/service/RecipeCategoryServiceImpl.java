@@ -1,7 +1,9 @@
 package com.orsolon.recipewebservice.service;
 
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
+import com.orsolon.recipewebservice.exception.InvalidFieldValueException;
 import com.orsolon.recipewebservice.exception.RecipeCategoryNotFoundException;
+import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
@@ -37,14 +39,18 @@ public class RecipeCategoryServiceImpl implements RecipeCategoryService {
     }
 
     @Override
-    public RecipeCategoryDTO findById(Long id) {
-        RecipeCategory recipeCategory = recipeCategoryRepository.findById(id)
-                .orElseThrow(() -> new RecipeCategoryNotFoundException("Recipe Category not found with id: " + id));
+    public RecipeCategoryDTO findById(Long categoryId) {
+        validateIdParameter(categoryId);
+
+        RecipeCategory recipeCategory = recipeCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RecipeCategoryNotFoundException("Recipe Category not found with id: " + categoryId));
         return dtoConverter.convertRecipeCategoryToDTO(recipeCategory);
     }
 
     @Override
     public List<RecipeCategoryDTO> search(String query) {
+        validateStringParameter(query);
+
         Specification<RecipeCategory> searchSpec = new Specification<RecipeCategory>() {
             @Override
             public Predicate toPredicate(Root<RecipeCategory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
@@ -105,6 +111,23 @@ public class RecipeCategoryServiceImpl implements RecipeCategoryService {
 
     @Override
     public void delete(Long recipeId) {
+        validateIdParameter(recipeId);
 
+        RecipeCategory recipeCategory = recipeCategoryRepository.findById(recipeId)
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
+        recipeCategoryRepository.delete(recipeCategory);
     }
+
+    private void validateIdParameter(Long id) {
+        if (id == null || id <= 0) {
+            throw new InvalidFieldValueException("Invalid value: " + id);
+        }
+    }
+
+    private void validateStringParameter(String string) {
+        if (string == null || string.isEmpty()) {
+            throw new InvalidFieldValueException("Invalid value: " + string);
+        }
+    }
+
 }
