@@ -1,14 +1,17 @@
 package com.orsolon.recipewebservice.dto.xml;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class IngredientXmlTest {
+@DisplayName("Ingredient XML Test")
+public class IngredientXmlTest {
 
     @Test
-    void validIngredientXml() {
+    @DisplayName("Read from XML with valid data should return IngredientXml")
+    public void readFromXml_WithValidData_ShouldReturnIngredientXml() {
         IngredientAmount ingredientAmount = IngredientAmount.builder()
                 .quantity("1")
                 .unit("cup")

@@ -119,7 +119,7 @@ public class RecipeValidatorHelper {
             throw new InvalidFieldValueException("Categories cannot be null.");
         }
 
-        categories.forEach(category -> RecipeCategoryValidatorHelper.validateAndSanitize(category));
+        categories.forEach(RecipeCategoryValidatorHelper::validateAndSanitize);
     }
 
     private static void validateIngredients(List<IngredientDTO> ingredients) {
@@ -127,10 +127,8 @@ public class RecipeValidatorHelper {
             throw new InvalidFieldValueException("Ingredients cannot be null.");
         }
 
-        ingredients.forEach(ingredient -> {
-            // Check for required fields and valid lengths
-            IngredientValidatorHelper.validateAndSanitize(ingredient);
-        });
+        // Check for required fields and valid lengths
+        ingredients.forEach(IngredientValidatorHelper::validateAndSanitize);
     }
 
     private static void validateSteps(List<String> steps) {

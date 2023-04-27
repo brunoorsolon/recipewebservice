@@ -5,6 +5,7 @@ import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.repository.IngredientRepository;
 import com.orsolon.recipewebservice.service.validator.IngredientValidatorHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ActiveProfiles("test")
+@DisplayName("Ingredient Service Test")
 public class IngredientServiceTest {
 
     private IngredientService ingredientService;
@@ -41,7 +43,8 @@ public class IngredientServiceTest {
     }
 
     @Test
-    public void testCreateIngredientWithValidData() {
+    @DisplayName("Create Ingredient should create Ingredient and return status created")
+    public void createIngredient_ShouldCreateIngredientAndReturnStatusCreated() {
         // Create an IngredientDTO
         IngredientDTO mockIngredientDTO = createMockIngredientDTO();
 

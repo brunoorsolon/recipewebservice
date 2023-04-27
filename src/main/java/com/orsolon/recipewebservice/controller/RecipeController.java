@@ -76,7 +76,8 @@ public class RecipeController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Recipes found",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RecipeDTO.class))}),
-            @ApiResponse(responseCode = "500", description = "Internal server error occurred")})
+            @ApiResponse(responseCode = "500", description = "Internal server error occurred")
+    })
     public ResponseEntity<List<RecipeDTO>> search(@Parameter(description = "The search query string") @RequestParam String query) {
         List<RecipeDTO> recipes = recipeService.search(query);
         return new ResponseEntity<>(recipes, HttpStatus.OK);

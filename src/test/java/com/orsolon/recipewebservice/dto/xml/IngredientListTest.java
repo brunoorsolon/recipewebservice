@@ -1,16 +1,19 @@
 package com.orsolon.recipewebservice.dto.xml;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class IngredientListTest {
+@DisplayName("Ingredient List Test")
+public class IngredientListTest {
 
     @Test
-    void validIngredientList() {
+    @DisplayName("Read from XML with valid data should return IngredientList")
+    public void readFromXml_WithValidData_ShouldReturnIngredientList() {
         IngredientXml ingredientXml = IngredientXml.builder()
                 .item("sugar")
                 .amount(IngredientAmount.builder().quantity("1").unit("cup").build())
@@ -18,11 +21,11 @@ class IngredientListTest {
 
         IngredientDiv ingredientDiv = IngredientDiv.builder()
                 .title("Ingredients")
-                .ingredients(Arrays.asList(ingredientXml))
+                .ingredients(Collections.singletonList(ingredientXml))
                 .build();
 
         IngredientList ingredientList = IngredientList.builder()
-                .ingredientDivs(Arrays.asList(ingredientDiv))
+                .ingredientDivs(Collections.singletonList(ingredientDiv))
                 .build();
 
         assertNotNull(ingredientList);

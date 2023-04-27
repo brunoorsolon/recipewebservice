@@ -1,5 +1,6 @@
 package com.orsolon.recipewebservice.dto.xml;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -8,10 +9,12 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class RecipeMlTest {
+@DisplayName("Recipe Ml Test")
+public class RecipeMlTest {
 
     @Test
-    void validRecipeMl() {
+    @DisplayName("Read from XML with valid data should return RecipeMl")
+    public void readFromXml_WithValidData_ShouldReturnRecipeMl() {
         RecipeXml recipeXml = RecipeXml.builder()
                 .head(RecipeHead.builder().title("Chocolate Cake").categories(Arrays.asList("dessert", "cake")).yield(4).build())
                 .ingredientList(IngredientList.builder().ingredientDivs(new ArrayList<>()).build())

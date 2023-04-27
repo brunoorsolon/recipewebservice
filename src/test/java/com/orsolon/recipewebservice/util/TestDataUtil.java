@@ -26,29 +26,34 @@ public class TestDataUtil {
     private static final int CATEGORY_COUNT = 3;
     private static final int INGREDIENT_COUNT = 10;
 
-    public static List<Recipe> createRecipeList() {
-        List<Recipe> recipeList = new ArrayList<Recipe>();
+    public static List<Recipe> createRecipeList(boolean generateId) {
+        List<Recipe> recipeList = new ArrayList<>();
 
-        List<RecipeCategory> recipeCategoryList = createRecipeCategoryList();
+        List<RecipeCategory> recipeCategoryList = createRecipeCategoryList(generateId);
 
-        List<Ingredient> ingredientList = createIngredientList();
+        List<Ingredient> ingredientList = createIngredientList(generateId);
 
         List<String> stepList = new ArrayList<>();
         stepList.add(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \n" +
-                        "Gravida arcu ac tortor dignissim convallis aenean et tortor. Natoque penatibus et magnis dis parturient. Neque convallis a cras semper.");
+                """
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Gravida arcu ac tortor dignissim convallis aenean et tortor. Natoque penatibus et magnis dis parturient. Neque convallis a cras semper.
+                        """);
         stepList.add(
-                "Doggo ipsum tungg smol long bois big ol I am bekom fat boofers you are doin me a concern, shibe tungg doge ruff. Ur givin me a spook fluffer you are doin me a concern big ol shoob clouds, heckin much ruin diet aqua doggo;\n" +
-                        "Wow very biscit doggo boof maximum borkdrive, doge. heck long doggo you are doin me a concern. tungg big ol pupper shoob. big ol shooberino.");
+                """
+                        Doggo ipsum tungg smol long bois big ol I am bekom fat boofers you are doin me a concern, shibe tungg doge ruff. Ur givin me a spook fluffer you are doin me a concern big ol shoob clouds, heckin much ruin diet aqua doggo
+                        Wow very biscit doggo boof maximum borkdrive, doge. heck long doggo you are doin me a concern. tungg big ol pupper shoob. big ol shooberino.
+                        """);
         stepList.add(
-                "Bacon ipsum dolor amet ham hock eiusmod consectetur pork shank lorem. Pork chop prosciutto cupim sed, pork tongue short loin.\n" +
-                        "Esse ipsum pariatur cupidatat, labore capicola eu aute occaecat pork chop filet mignon ullamco ham prosciutto.\n" +
-                        "Fugiat cupim brisket, turkey tempor flank aute.");
+                """
+                        Bacon ipsum dolor amet ham hock eiusmod consectetur pork shank lorem. Pork chop prosciutto cupim sed, pork tongue short loin.
+                        Esse ipsum pariatur cupidatat, labore capicola eu aute occaecat pork chop filet mignon ullamco ham prosciutto.
+                        Fugiat cupim brisket, turkey tempor flank aute.""");
 
         for (int i = 1; i <= 5; i++) {
             recipeList.add(
                     Recipe.builder()
-                            .id((long)i)
+                            .id(generateId ? (long)i : null)
                             .title("Generated Recipe " + i)
                             .categories(recipeCategoryList)
                             .yield(i)
@@ -60,29 +65,34 @@ public class TestDataUtil {
         return recipeList;
     }
 
-    public static List<RecipeDTO> createRecipeDTOList() {
-        List<RecipeDTO> recipeDTOList = new ArrayList<RecipeDTO>();
+    public static List<RecipeDTO> createRecipeDTOList(boolean generateId) {
+        List<RecipeDTO> recipeDTOList = new ArrayList<>();
 
-        List<RecipeCategoryDTO> recipeCategoryDTOList = createRecipeCategoryDTOList();
+        List<RecipeCategoryDTO> recipeCategoryDTOList = createRecipeCategoryDTOList(generateId);
 
-        List<IngredientDTO> ingredientDTOList = createIngredientDTOList();
+        List<IngredientDTO> ingredientDTOList = createIngredientDTOList(generateId);
 
         List<String> stepList = new ArrayList<>();
         stepList.add(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \n" +
-                "Gravida arcu ac tortor dignissim convallis aenean et tortor. Natoque penatibus et magnis dis parturient. Neque convallis a cras semper.");
+                """
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Gravida arcu ac tortor dignissim convallis aenean et tortor. Natoque penatibus et magnis dis parturient. Neque convallis a cras semper.
+                        """);
         stepList.add(
-                "Doggo ipsum tungg smol long bois big ol I am bekom fat boofers you are doin me a concern, shibe tungg doge ruff. Ur givin me a spook fluffer you are doin me a concern big ol shoob clouds, heckin much ruin diet aqua doggo;\n" +
-                "Wow very biscit doggo boof maximum borkdrive, doge. heck long doggo you are doin me a concern. tungg big ol pupper shoob. big ol shooberino.");
+                """
+                        Doggo ipsum tungg smol long bois big ol I am bekom fat boofers you are doin me a concern, shibe tungg doge ruff. Ur givin me a spook fluffer you are doin me a concern big ol shoob clouds, heckin much ruin diet aqua doggo
+                        Wow very biscit doggo boof maximum borkdrive, doge. heck long doggo you are doin me a concern. tungg big ol pupper shoob. big ol shooberino.
+                        """);
         stepList.add(
-                "Bacon ipsum dolor amet ham hock eiusmod consectetur pork shank lorem. Pork chop prosciutto cupim sed, pork tongue short loin.\n" +
-                "Esse ipsum pariatur cupidatat, labore capicola eu aute occaecat pork chop filet mignon ullamco ham prosciutto.\n" +
-                "Fugiat cupim brisket, turkey tempor flank aute.");
+                """
+                        Bacon ipsum dolor amet ham hock eiusmod consectetur pork shank lorem. Pork chop prosciutto cupim sed, pork tongue short loin.
+                        Esse ipsum pariatur cupidatat, labore capicola eu aute occaecat pork chop filet mignon ullamco ham prosciutto.
+                        Fugiat cupim brisket, turkey tempor flank aute.""");
 
         for (int i = 1; i <= 5; i++) {
             recipeDTOList.add(
                     RecipeDTO.builder()
-                            .id((long)i)
+                            .id(generateId ? (long)i : null)
                             .title("Generated Recipe " + i)
                             .categories(recipeCategoryDTOList)
                             .yield(i)
@@ -94,7 +104,7 @@ public class TestDataUtil {
         return recipeDTOList;
     }
 
-    public static List<RecipeCategory> createRecipeCategoryList() {
+    public static List<RecipeCategory> createRecipeCategoryList(boolean generateId) {
         List<RecipeCategory> recipeCategoryList = new ArrayList<>();
         List<Map<String, String>> availableCategories = getAvailableCategories();
 
@@ -104,7 +114,7 @@ public class TestDataUtil {
             Map<String,String> categoryMap = availableCategories.get(numbers.get(c));
             recipeCategoryList.add(
                     RecipeCategory.builder()
-                            .id((long)c)
+                            .id(generateId ? (long)c : null)
                             .name(categoryMap.get("name"))
                             .build());
         }
@@ -112,7 +122,7 @@ public class TestDataUtil {
         return recipeCategoryList;
     }
 
-    public static List<RecipeCategoryDTO> createRecipeCategoryDTOList() {
+    public static List<RecipeCategoryDTO> createRecipeCategoryDTOList(boolean generateId) {
         List<RecipeCategoryDTO> recipeCategoryDTOList = new ArrayList<>();
         List<Map<String, String>> availableCategories = getAvailableCategories();
 
@@ -122,7 +132,7 @@ public class TestDataUtil {
             Map<String,String> categoryMap = availableCategories.get(numbers.get(c));
             recipeCategoryDTOList.add(
                     RecipeCategoryDTO.builder()
-                            .id((long)c)
+                            .id(generateId ? (long)c : null)
                             .name(categoryMap.get("name"))
                             .build());
         }
@@ -130,7 +140,7 @@ public class TestDataUtil {
         return recipeCategoryDTOList;
     }
 
-    public static List<Ingredient> createIngredientList() {
+    public static List<Ingredient> createIngredientList(boolean generateId) {
         List<Ingredient> ingredientList = new ArrayList<>();
         List<Map<String, String>> availableIngredients = getAvailableIngredients();
 
@@ -140,7 +150,7 @@ public class TestDataUtil {
             Map<String,String> ingredientMap = availableIngredients.get(numbers.get(i));
             ingredientList.add(
                     Ingredient.builder()
-                            .id((long) i)
+                            .id(generateId ? (long)i : null)
                             .title(ingredientMap.get("title"))
                             .quantity(ingredientMap.get("quantity"))
                             .unit(ingredientMap.get("unit"))
@@ -151,7 +161,7 @@ public class TestDataUtil {
         return ingredientList;
     }
 
-    public static List<IngredientDTO> createIngredientDTOList() {
+    public static List<IngredientDTO> createIngredientDTOList(boolean generateId) {
         List<IngredientDTO> ingredientDTOList = new ArrayList<>();
         List<Map<String, String>> availableIngredients = getAvailableIngredients();
 
@@ -161,7 +171,7 @@ public class TestDataUtil {
             Map<String,String> ingredientMap = availableIngredients.get(numbers.get(i));
             ingredientDTOList.add(
                     IngredientDTO.builder()
-                            .id((long) i)
+                            .id(generateId ? (long)i : null)
                             .title(ingredientMap.get("title"))
                             .quantity(ingredientMap.get("quantity"))
                             .unit(ingredientMap.get("unit"))
@@ -194,7 +204,7 @@ public class TestDataUtil {
 
     // Reads from a JSON of sample Ingredients
     private static List<Map<String, String>> getAvailableIngredients() {
-        List<Map<String, String>> ingedientMaps = new ArrayList<>();
+        List<Map<String, String>> ingredientMaps = new ArrayList<>();
         try {
             // Load JSON file as a resource
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -202,13 +212,13 @@ public class TestDataUtil {
 
             // Parse JSON string into List<Map<String, String>>
             ObjectMapper objectMapper = new ObjectMapper();
-            ingedientMaps = objectMapper.readValue(categoriesJson.getInputStream(), new TypeReference<List<Map<String, String>>>(){});
+            ingredientMaps = objectMapper.readValue(categoriesJson.getInputStream(), new TypeReference<List<Map<String, String>>>(){});
         }
         catch (IOException e) {
             System.out.println("Ingredients JSON not found. Will return empty map.");
         }
 
-        return ingedientMaps;
+        return ingredientMaps;
     }
 
     // Helper method for the random item picking when generating sample data

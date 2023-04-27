@@ -1,15 +1,20 @@
 package com.orsolon.recipewebservice.exception;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+@DisplayName("Error Response Test")
 public class ErrorResponseTest {
+
     @Test
-    public void testErrorResponseBuilder_goodPath() {
+    @DisplayName("Build with valid data should return ErrorResponse")
+    public void build_WithValidData_ShouldReturnErrorResponse() {
         LocalDateTime timestamp = LocalDateTime.now();
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(timestamp)
@@ -27,19 +32,21 @@ public class ErrorResponseTest {
     }
 
     @Test
-    public void testErrorResponseConstructor_goodPath() {
+    @DisplayName("Construct with valid data should return ErrorResponse")
+    public void construct_WithValidData_ShouldReturnErrorResponse() {
         LocalDateTime timestamp = LocalDateTime.now();
         ErrorResponse errorResponse = new ErrorResponse(timestamp, 400, "Bad Request", "/api/resource");
 
         assertEquals(timestamp, errorResponse.getTimestamp());
         assertEquals(400, errorResponse.getStatus());
-        assertEquals(null, errorResponse.getError());
+        assertNull(errorResponse.getError());
         assertEquals("Bad Request", errorResponse.getMessage());
         assertEquals("/api/resource", errorResponse.getPath());
     }
 
     @Test
-    public void testErrorResponseEqualsAndHashCode_badPath() {
+    @DisplayName("Equals and hashCode with different data should not be equal")
+    public void equalsAndHashCode_WithDifferentData_ShouldNotBeEqual() {
         LocalDateTime timestamp = LocalDateTime.now();
         ErrorResponse errorResponse1 = ErrorResponse.builder()
                 .timestamp(timestamp)
@@ -62,7 +69,8 @@ public class ErrorResponseTest {
     }
 
     @Test
-    public void testErrorResponseToString_badPath() {
+    @DisplayName("ToString with different data should not be equal")
+    public void toString_WithDifferentData_ShouldNotBeEqual() {
         LocalDateTime timestamp = LocalDateTime.now();
         ErrorResponse errorResponse1 = ErrorResponse.builder()
                 .timestamp(timestamp)

@@ -5,6 +5,7 @@ import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ActiveProfiles("test")
+@DisplayName("Recipe Category Service Test")
 public class RecipeCategoryServiceTest {
 
     private RecipeCategoryService recipeCategoryService;
@@ -41,7 +43,8 @@ public class RecipeCategoryServiceTest {
     }
 
     @Test
-    public void testCreateRecipeCategoryWithValidData() {
+    @DisplayName("Create Recipe Category should create Recipe Category and return status created")
+    public void createRecipeCategory_ShouldCreateRecipeCategoryAndReturnStatusCreated() {
         // Create a RecipeCategoryDTO
         RecipeCategoryDTO mockRecipeCategoryDTO = createMockRecipeCategoryDTO();
 

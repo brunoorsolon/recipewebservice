@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +33,8 @@ public class RecipeCategoryController {
     @Operation(summary = "Retrieve a list of all recipe categories in the system. Returns an array of category details.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully returned category list",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RecipeCategoryDTO.class))})
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RecipeCategoryDTO.class))}),
+            @ApiResponse(responseCode = "500", description = "Internal server error occurred")
     })
     public ResponseEntity<List<RecipeCategoryDTO>> findAll() {
         List<RecipeCategoryDTO> categories = recipeCategoryService.findAll();
@@ -48,11 +48,7 @@ public class RecipeCategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found")})
     public ResponseEntity<RecipeCategoryDTO> findById(@Parameter(description = "The unique identifier of the recipe category") @PathVariable Long id) {
         RecipeCategoryDTO category = recipeCategoryService.findById(id);
-        if (category == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity<>(category, HttpStatus.OK);
-        }
+        return new ResponseEntity<>(category, HttpStatus.OK);
     }
 
     @GetMapping("/search")
@@ -60,19 +56,10 @@ public class RecipeCategoryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories found",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RecipeCategoryDTO.class))}),
-            @ApiResponse(responseCode = "404", description = "No categories found")})
+            @ApiResponse(responseCode = "500", description = "Internal server error occurred")
+    })
     public ResponseEntity<List<RecipeCategoryDTO>> search(@Parameter(description = "The search query string") @RequestParam String query) {
         List<RecipeCategoryDTO> categories = recipeCategoryService.search(query);
-        if (categories.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity<>(categories, HttpStatus.OK);
-        }
+        return new ResponseEntity<>(categories, HttpStatus.OK);
     }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
-
 }
