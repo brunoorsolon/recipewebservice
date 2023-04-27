@@ -33,12 +33,12 @@ public class DTOConverterTest
     public DTOConverterTest(DTOConverter dtoConverter) {
         this.dtoConverter = dtoConverter;
         // Uses class TestDataUtil to populate sample data for the tests
-        this.sampleRecipeList = TestDataUtil.createRecipeList();
-        this.sampleRecipeDTOList = TestDataUtil.createRecipeDTOList();
-        this.sampleRecipeCategoryList = TestDataUtil.createRecipeCategoryList();
-        this.sampleRecipeCategoryDTOList = TestDataUtil.createRecipeCategoryDTOList();
-        this.sampleIngredientList = TestDataUtil.createIngredientList();
-        this.sampleIngredientDTOList = TestDataUtil.createIngredientDTOList();
+        this.sampleRecipeList = TestDataUtil.createRecipeList(true);
+        this.sampleRecipeDTOList = TestDataUtil.createRecipeDTOList(true);
+        this.sampleRecipeCategoryList = TestDataUtil.createRecipeCategoryList(true);
+        this.sampleRecipeCategoryDTOList = TestDataUtil.createRecipeCategoryDTOList(true);
+        this.sampleIngredientList = TestDataUtil.createIngredientList(true);
+        this.sampleIngredientDTOList = TestDataUtil.createIngredientDTOList(true);
     }
 
     // Test conversion from Recipe Entity to Recipe DTO
