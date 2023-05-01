@@ -69,26 +69,44 @@ public class RecipeValidatorHelper {
                     sanitizedUpdates.put(key, yield);
                 }
                 case "categories" -> {
-                    if (value instanceof List) {
-                        List<RecipeCategoryDTO> categories = CommonValidatorHelper.castList((List<?>) value, RecipeCategoryDTO.class);
-                        validateCategories(categories);
-                        sanitizedUpdates.put(key, categories);
+                    if (value != null && value instanceof List) {
+                        try {
+                            List<RecipeCategoryDTO> categories = CommonValidatorHelper.castList((List<?>) value, RecipeCategoryDTO.class);
+                            validateCategories(categories);
+                            sanitizedUpdates.put(key, categories);
+                        } catch (ClassCastException e) {
+                            throw new InvalidFieldValueException("Invalid value for Categories.");
+                        }
+                    } else {
+                        throw new InvalidFieldValueException("Invalid value for Categories.");
                     }
                 }
                 case "ingredients" -> {
-                    if (value instanceof List) {
-                        List<IngredientDTO> ingredients = CommonValidatorHelper.castList((List<?>) value, IngredientDTO.class);
-                        validateIngredients(ingredients);
-                        sanitizedUpdates.put(key, ingredients);
+                    if (value != null && value instanceof List) {
+                        try {
+                                List<IngredientDTO> ingredients = CommonValidatorHelper.castList((List<?>) value, IngredientDTO.class);
+                                validateIngredients(ingredients);
+                                sanitizedUpdates.put(key, ingredients);
+                        } catch (ClassCastException e) {
+                            throw new InvalidFieldValueException("Invalid value for Ingredients.");
+                        }
+                    } else {
+                        throw new InvalidFieldValueException("Invalid value for Ingredients.");
                     }
                 }
                 case "steps" -> {
-                    if (value instanceof List) {
-                        List<String> steps = CommonValidatorHelper.castList((List<?>) value, String.class).stream()
-                                .map(CommonValidatorHelper::sanitizeStringValue)
-                                .collect(Collectors.toList());
-                        validateSteps(steps);
-                        sanitizedUpdates.put(key, steps);
+                    if (value != null && value instanceof List) {
+                        try {
+                            List<String> steps = CommonValidatorHelper.castList((List<?>) value, String.class).stream()
+                                    .map(CommonValidatorHelper::sanitizeStringValue)
+                                    .collect(Collectors.toList());
+                            validateSteps(steps);
+                            sanitizedUpdates.put(key, steps);
+                        } catch (ClassCastException e) {
+                            throw new InvalidFieldValueException("Invalid value for Steps.");
+                        }
+                    } else {
+                        throw new InvalidFieldValueException("Invalid value for Steps.");
                     }
                 }
                 default -> throw new InvalidFieldException("Invalid field: " + key);
@@ -115,27 +133,15 @@ public class RecipeValidatorHelper {
     }
 
     private static void validateCategories(List<RecipeCategoryDTO> categories) {
-        if (categories == null) {
-            throw new InvalidFieldValueException("Categories cannot be null.");
-        }
-
         categories.forEach(RecipeCategoryValidatorHelper::validateAndSanitize);
     }
 
     private static void validateIngredients(List<IngredientDTO> ingredients) {
-        if (ingredients == null) {
-            throw new InvalidFieldValueException("Ingredients cannot be null.");
-        }
-
         // Check for required fields and valid lengths
         ingredients.forEach(IngredientValidatorHelper::validateAndSanitize);
     }
 
     private static void validateSteps(List<String> steps) {
-        if (steps == null) {
-            throw new InvalidFieldValueException("Steps cannot be null.");
-        }
-
         steps.forEach(step -> {
             if (step == null || step.isEmpty() || step.length() > 2048) {
                 throw new InvalidFieldValueException("Invalid value for step: " + step);

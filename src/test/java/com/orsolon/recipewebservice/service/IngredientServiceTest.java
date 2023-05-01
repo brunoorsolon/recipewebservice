@@ -32,16 +32,6 @@ public class IngredientServiceTest {
     @Captor
     private ArgumentCaptor<Ingredient> ingredientCaptor;
 
-    @BeforeEach
-    void setUp() {
-        // Mock
-        this.ingredientRepository = Mockito.mock(IngredientRepository.class);
-        this.dtoConverter = Mockito.mock(DTOConverter.class);
-
-        // Inject Mocks
-        this.ingredientService = new IngredientServiceImpl(ingredientRepository, dtoConverter);
-    }
-
     @Test
     @DisplayName("Create Ingredient should create Ingredient and return status created")
     public void createIngredient_ShouldCreateIngredientAndReturnStatusCreated() {
@@ -72,16 +62,6 @@ public class IngredientServiceTest {
         }
     }
 
-    // Helper method to create a mock IngredientDTO object
-    private IngredientDTO createMockIngredientDTO() {
-        return IngredientDTO.builder()
-                        .id(1L)
-                        .quantity("1")
-                        .title("Title 1")
-                        .unit("mock")
-                        .item("Mock Ingredient 1")
-                        .build();
-    }
     // Helper method to create a mock Ingredient object
     private Ingredient createMockIngredient() {
         return Ingredient.builder()
@@ -92,5 +72,26 @@ public class IngredientServiceTest {
                         .item("Mock Ingredient 1")
                         .build();
 
+    }
+
+    // Helper method to create a mock IngredientDTO object
+    private IngredientDTO createMockIngredientDTO() {
+        return IngredientDTO.builder()
+                        .id(1L)
+                        .quantity("1")
+                        .title("Title 1")
+                        .unit("mock")
+                        .item("Mock Ingredient 1")
+                        .build();
+    }
+
+    @BeforeEach
+    void setUp() {
+        // Mock
+        this.ingredientRepository = Mockito.mock(IngredientRepository.class);
+        this.dtoConverter = Mockito.mock(DTOConverter.class);
+
+        // Inject Mocks
+        this.ingredientService = new IngredientServiceImpl(ingredientRepository, dtoConverter);
     }
 }

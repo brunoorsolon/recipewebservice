@@ -35,6 +35,10 @@ public class IngredientValidatorHelper {
                 .build();
     }
 
+    public static Map<String, Object> validateAndSanitizeUpdates(Map<String, Object> updates) {
+        return validateAndSanitizeFields(updates);
+    }
+
     private static Map<String, Object> validateAndSanitizeFields(Map<String, Object> updates) {
         Map<String, Object> sanitizedUpdates = new HashMap<>();
 

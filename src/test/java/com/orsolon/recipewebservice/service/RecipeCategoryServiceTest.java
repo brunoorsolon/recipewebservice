@@ -1,6 +1,8 @@
 package com.orsolon.recipewebservice.service;
 
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
+import com.orsolon.recipewebservice.exception.RecipeCategoryNotFoundException;
+import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
@@ -17,7 +19,11 @@ import org.mockito.quality.Strictness;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -32,14 +38,20 @@ public class RecipeCategoryServiceTest {
     @Captor
     private ArgumentCaptor<RecipeCategory> recipeCategoryCaptor;
 
-    @BeforeEach
-    void setUp() {
-        // Mock
-        this.recipeCategoryRepository = Mockito.mock(RecipeCategoryRepository.class);
-        this.dtoConverter = Mockito.mock(DTOConverter.class);
+    // Helper method to create a mock RecipeCategory object
+    private RecipeCategory createMockRecipeCategory() {
+        return RecipeCategory.builder()
+                .id(1L)
+                .name("Mock category 1")
+                .build();
+    }
 
-        // Inject Mocks
-        this.recipeCategoryService = new RecipeCategoryServiceImpl(recipeCategoryRepository, dtoConverter);
+    // Helper method to create a mock RecipeCategoryDTO object
+    private RecipeCategoryDTO createMockRecipeCategoryDTO() {
+        return RecipeCategoryDTO.builder()
+                        .id(1L)
+                        .name("Mock category 1")
+                        .build();
     }
 
     @Test
@@ -54,9 +66,9 @@ public class RecipeCategoryServiceTest {
         try (MockedStatic<RecipeCategoryValidatorHelper> mockedRecipeCategoryValidatorHelper = Mockito.mockStatic(RecipeCategoryValidatorHelper.class)) {
             // Mock the necessary methods
             mockedRecipeCategoryValidatorHelper.when(() -> RecipeCategoryValidatorHelper.validateAndSanitize(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategoryDTO);
-            Mockito.when(recipeCategoryRepository.save(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
+            Mockito.when(recipeCategoryRepository.save(any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
             Mockito.when(dtoConverter.convertRecipeCategoryToEntity(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategory);
-            Mockito.when(dtoConverter.convertRecipeCategoryToDTO(Mockito.any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
+            Mockito.when(dtoConverter.convertRecipeCategoryToDTO(any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
 
             // Call the create method
             RecipeCategoryDTO createdRecipeCategoryDTO = recipeCategoryService.create(mockRecipeCategoryDTO);
@@ -72,18 +84,74 @@ public class RecipeCategoryServiceTest {
         }
     }
 
-    // Helper method to create a mock RecipeCategoryDTO object
-    private RecipeCategoryDTO createMockRecipeCategoryDTO() {
-        return RecipeCategoryDTO.builder()
-                        .id(1L)
-                        .name("Mock category 1")
-                        .build();
+    @Test
+    @DisplayName("Delete Recipe Category should delete the Recipe Category")
+    public void deleteRecipeCategory_ShouldDeleteRecipeCategory() {
+        // Create a RecipeCategory
+        RecipeCategory mockRecipeCategory = createMockRecipeCategory();
+
+        // Mock the necessary methods
+        Mockito.when(recipeCategoryRepository.findById(1L)).thenReturn(Optional.of(mockRecipeCategory));
+
+        // Call the delete method
+        recipeCategoryService.delete(1L);
+
+        // Verify that the delete method was called on the repository
+        Mockito.verify(recipeCategoryRepository, Mockito.times(1)).delete(mockRecipeCategory);
     }
-    // Helper method to create a mock RecipeCategory object
-    private RecipeCategory createMockRecipeCategory() {
-        return RecipeCategory.builder()
-                .id(1L)
-                .name("Mock category 1")
-                .build();
+
+    @Test
+    @DisplayName("Delete should throw Recipe not found exception when recipe not found")
+    public void delete_ShouldThrowRecipeNotFoundExceptionWhenRecipeNotFound() {
+        // Mock the necessary methods
+        Mockito.when(recipeCategoryRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Call the delete method and expect an exception
+        assertThrows(RecipeNotFoundException.class, () -> recipeCategoryService.delete(1L));
+    }
+
+    @BeforeEach
+    void setUp() {
+        // Mock
+        this.recipeCategoryRepository = Mockito.mock(RecipeCategoryRepository.class);
+        this.dtoConverter = Mockito.mock(DTOConverter.class);
+
+        // Inject Mocks
+        this.recipeCategoryService = new RecipeCategoryServiceImpl(recipeCategoryRepository, dtoConverter);
+    }
+
+    @Test
+    @DisplayName("Update Recipe Category should update and return updated Recipe Category")
+    public void updateRecipeCategory_ShouldUpdateAndReturnUpdatedRecipeCategory() {
+        // Create a RecipeCategoryDTO
+        RecipeCategoryDTO mockRecipeCategoryDTO = createMockRecipeCategoryDTO();
+
+        // Create a RecipeCategory
+        RecipeCategory mockRecipeCategory = createMockRecipeCategory();
+
+        // Mock the necessary methods
+        Mockito.when(recipeCategoryRepository.findById(1L)).thenReturn(Optional.of(mockRecipeCategory));
+        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
+        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(mockRecipeCategory)).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryRepository.save(mockRecipeCategory)).thenReturn(mockRecipeCategory);
+
+        // Call the update method
+        RecipeCategoryDTO updatedRecipeCategoryDTO = recipeCategoryService.update(1L, mockRecipeCategoryDTO);
+
+        // Verify that the returned RecipeCategoryDTO is the expected one
+        assertEquals(mockRecipeCategoryDTO, updatedRecipeCategoryDTO);
+    }
+
+    @Test
+    @DisplayName("Update should throw Recipe Category not found exception when category not found")
+    public void update_ShouldThrowRecipeCategoryNotFoundExceptionWhenCategoryNotFound() {
+        // Create a RecipeCategoryDTO
+        RecipeCategoryDTO mockRecipeCategoryDTO = createMockRecipeCategoryDTO();
+
+        // Mock the necessary methods
+        Mockito.when(recipeCategoryRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Call the update method and expect an exception
+        assertThrows(RecipeCategoryNotFoundException.class, () -> recipeCategoryService.update(1L, mockRecipeCategoryDTO));
     }
 }

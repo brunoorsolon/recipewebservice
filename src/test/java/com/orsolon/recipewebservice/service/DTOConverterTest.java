@@ -35,12 +35,12 @@ public class DTOConverterTest
     public DTOConverterTest(DTOConverter dtoConverter) {
         this.dtoConverter = dtoConverter;
         // Uses class TestDataUtil to populate sample data for the tests
-        this.sampleRecipeList = TestDataUtil.createRecipeList(true);
-        this.sampleRecipeDTOList = TestDataUtil.createRecipeDTOList(true);
-        this.sampleRecipeCategoryList = TestDataUtil.createRecipeCategoryList(true);
-        this.sampleRecipeCategoryDTOList = TestDataUtil.createRecipeCategoryDTOList(true);
-        this.sampleIngredientList = TestDataUtil.createIngredientList(true);
-        this.sampleIngredientDTOList = TestDataUtil.createIngredientDTOList(true);
+        this.sampleRecipeList = TestDataUtil.createRecipeList(true, true);
+        this.sampleRecipeDTOList = TestDataUtil.createRecipeDTOList(true, true);
+        this.sampleRecipeCategoryList = TestDataUtil.createRecipeCategoryList(true, true);
+        this.sampleRecipeCategoryDTOList = TestDataUtil.createRecipeCategoryDTOList(true, true);
+        this.sampleIngredientList = TestDataUtil.createIngredientList(true, true);
+        this.sampleIngredientDTOList = TestDataUtil.createIngredientDTOList(true, true);
     }
 
     @Test

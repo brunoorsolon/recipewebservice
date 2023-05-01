@@ -69,6 +69,88 @@ public class ErrorResponseTest {
     }
 
     @Test
+    @DisplayName("Equals should return true for equal objects and false for unequal objects")
+    public void equals_ShouldReturnTrueForEqualObjectsAndFalseForUnequalObjects() {
+        LocalDateTime timestamp = LocalDateTime.now();
+        ErrorResponse errorResponse1 = ErrorResponse.builder()
+                .timestamp(timestamp)
+                .status(404)
+                .error("Not Found")
+                .message("The requested resource was not found.")
+                .path("/api/resource")
+                .build();
+
+        ErrorResponse errorResponse2 = ErrorResponse.builder()
+                .timestamp(timestamp)
+                .status(404)
+                .error("Not Found")
+                .message("The requested resource was not found.")
+                .path("/api/resource")
+                .build();
+
+        ErrorResponse errorResponse3 = ErrorResponse.builder()
+                .timestamp(timestamp)
+                .status(404)
+                .error("Not Found")
+                .message("The requested resource was not found. This is a different message.")
+                .path("/api/resource")
+                .build();
+
+        assertEquals(errorResponse1, errorResponse2);
+        assertNotEquals(errorResponse1, errorResponse3);
+    }
+
+    @Test
+    @DisplayName("HashCode should return the same value for equal objects and different values for unequal objects")
+    public void hashCode_ShouldReturnSameValueForEqualObjectsAndDifferentValuesForUnequalObjects() {
+        LocalDateTime timestamp = LocalDateTime.now();
+        ErrorResponse errorResponse1 = ErrorResponse.builder()
+                .timestamp(timestamp)
+                .status(404)
+                .error("Not Found")
+                .message("The requested resource was not found.")
+                .path("/api/resource")
+                .build();
+
+        ErrorResponse errorResponse2 = ErrorResponse.builder()
+                .timestamp(timestamp)
+                .status(404)
+                .error("Not Found")
+                .message("The requested resource was not found.")
+                .path("/api/resource")
+                .build();
+
+        ErrorResponse errorResponse3 = ErrorResponse.builder()
+                .timestamp(timestamp)
+                .status(404)
+                .error("Not Found")
+                .message("The requested resource was not found. This is a different message.")
+                .path("/api/resource")
+                .build();
+
+        assertEquals(errorResponse1.hashCode(), errorResponse2.hashCode());
+        assertNotEquals(errorResponse1.hashCode(), errorResponse3.hashCode());
+    }
+
+    @Test
+    @DisplayName("Setters should set the corresponding fields")
+    public void setters_ShouldSetCorrespondingFields() {
+        LocalDateTime timestamp = LocalDateTime.now();
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(timestamp);
+        errorResponse.setStatus(400);
+        errorResponse.setError("Bad Request");
+        errorResponse.setMessage("Invalid request format.");
+        errorResponse.setPath("/api/resource");
+
+        assertEquals(timestamp, errorResponse.getTimestamp());
+        assertEquals(400, errorResponse.getStatus());
+        assertEquals("Bad Request", errorResponse.getError());
+        assertEquals("Invalid request format.", errorResponse.getMessage());
+        assertEquals("/api/resource", errorResponse.getPath());
+    }
+
+    @Test
     @DisplayName("ToString with different data should not be equal")
     public void toString_WithDifferentData_ShouldNotBeEqual() {
         LocalDateTime timestamp = LocalDateTime.now();

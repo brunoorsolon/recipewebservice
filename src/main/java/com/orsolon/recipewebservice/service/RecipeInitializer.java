@@ -6,7 +6,8 @@ import com.orsolon.recipewebservice.dto.RecipeDTO;
 import com.orsolon.recipewebservice.dto.xml.IngredientDiv;
 import com.orsolon.recipewebservice.dto.xml.IngredientXml;
 import com.orsolon.recipewebservice.dto.xml.RecipeMl;
-import lombok.extern.slf4j.Slf4j;
+import com.orsolon.recipewebservice.exception.RecipeLoadingException;
+import com.orsolon.recipewebservice.exception.RecipeParsingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Slf4j
 public class RecipeInitializer {
 
     private final RecipeXmlParser recipeXmlParser;
@@ -70,11 +70,11 @@ public class RecipeInitializer {
                                     .steps(recipeMl.getRecipe().getSteps())
                                     .build());
                 } else {
-                    log.error("Error parsing XML file: recipe element is null");
+                    throw new RecipeParsingException("Error parsing XML file: recipe element is null");
                 }
             }
         } catch (IOException e) {
-            log.error("Error loading recipes: {}", e.getMessage());
+            throw new RecipeLoadingException("Error loading recipes: " + e.getMessage());
         }
     }
 }

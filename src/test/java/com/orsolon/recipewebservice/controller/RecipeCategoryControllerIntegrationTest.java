@@ -61,7 +61,7 @@ public class RecipeCategoryControllerIntegrationTest {
     @Test
     @DisplayName("Find all should return categories and status OK")
     public void findAll_ShouldReturnCategoriesAndStatusOK() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false, true));
 
         List<RecipeCategoryDTO> mockCategoryList = mockRecipeList.stream()
                 .flatMap(recipe -> recipe.getCategories().stream())
@@ -90,7 +90,7 @@ public class RecipeCategoryControllerIntegrationTest {
     @Test
     @DisplayName("Find by ID when non-existing ID should return status not found")
     public void findById_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         RecipeCategoryDTO mockCategory = mockRecipe.getCategories().get(0);
 
         // Making sure that the Database HAS data
@@ -109,7 +109,7 @@ public class RecipeCategoryControllerIntegrationTest {
     @Test
     @DisplayName("Find by ID when invalid ID parameter should return status bad request")
     public void findById_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         RecipeCategoryDTO mockCategory = mockRecipe.getCategories().get(0);
 
         // Making sure that the Database HAS data
@@ -128,7 +128,7 @@ public class RecipeCategoryControllerIntegrationTest {
     @Test
     @DisplayName("Find by ID when valid ID should return category and status OK")
     public void findById_WhenValidId_ShouldReturnCategoryAndStatusOK() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         RecipeCategoryDTO mockCategory = mockRecipe.getCategories().get(0);
 
         mockMvc.perform(get("/api/v1/categories/{id}", mockCategory.getId())
@@ -142,7 +142,7 @@ public class RecipeCategoryControllerIntegrationTest {
     @Test
     @DisplayName("Search when no matches should return empty and status OK")
     public void search_WhenNoMatches_ShouldReturnEmptyAndStatusOk() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         RecipeCategoryDTO mockCategory = mockRecipe.getCategories().get(0);
 
 
@@ -169,7 +169,7 @@ public class RecipeCategoryControllerIntegrationTest {
     @Test
     @DisplayName("Search when invalid query should return status bad request")
     public void search_WhenInvalidQuery_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         RecipeCategoryDTO mockCategory = mockRecipe.getCategories().get(0);
 
         // Making sure that the Database HAS data
@@ -191,7 +191,7 @@ public class RecipeCategoryControllerIntegrationTest {
     @Test
     @DisplayName("Search when valid query should return categories and status OK")
     public void search_WhenValidQuery_ShouldReturnCategoriesAndStatusOK() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         RecipeCategoryDTO mockCategory = mockRecipe.getCategories().get(0);
         String queryCategory = mockCategory.getName();
 

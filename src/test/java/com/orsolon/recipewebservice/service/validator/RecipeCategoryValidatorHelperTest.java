@@ -18,17 +18,6 @@ public class RecipeCategoryValidatorHelperTest {
     RecipeCategoryValidatorHelper recipeCategoryValidatorHelper;
 
     @Test
-    @DisplayName("Validate and sanitize should throw exception when Recipe Category path is invalid")
-    public void validateAndSanitize_ShouldValidateAndSanitizeRecipeCategoryWithValidPath() {
-        RecipeCategoryDTO recipeCategoryDTO = RecipeCategoryDTO.builder()
-                .name("Dessert")
-                .build();
-
-        RecipeCategoryDTO sanitizedCategory = RecipeCategoryValidatorHelper.validateAndSanitize(recipeCategoryDTO);
-        assertEquals("Dessert", sanitizedCategory.getName());
-    }
-
-    @Test
     @DisplayName("Validate and sanitize should validate and sanitize Recipe Category with valid path")
     public void validateAndSanitize_ShouldThrowExceptionWhenRecipeCategoryPathIsInvalid() {
         RecipeCategoryDTO recipeCategoryDTO = RecipeCategoryDTO.builder()
@@ -41,5 +30,16 @@ public class RecipeCategoryValidatorHelperTest {
 
         recipeCategoryDTO.setName(null);
         assertThrows(InvalidFieldValueException.class, () -> RecipeCategoryValidatorHelper.validateAndSanitize(recipeCategoryDTO));
+    }
+
+    @Test
+    @DisplayName("Validate and sanitize should throw exception when Recipe Category path is invalid")
+    public void validateAndSanitize_ShouldValidateAndSanitizeRecipeCategoryWithValidPath() {
+        RecipeCategoryDTO recipeCategoryDTO = RecipeCategoryDTO.builder()
+                .name("Dessert")
+                .build();
+
+        RecipeCategoryDTO sanitizedCategory = RecipeCategoryValidatorHelper.validateAndSanitize(recipeCategoryDTO);
+        assertEquals("Dessert", sanitizedCategory.getName());
     }
 }

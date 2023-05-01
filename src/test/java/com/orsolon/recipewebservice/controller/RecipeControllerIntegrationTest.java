@@ -56,9 +56,41 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Create - Recipe with the sam title as an existing one should Status Conflict")
+    public void create_WhenExistingTitle_ShouldReturnStatusConflict() throws Exception {
+        RecipeDTO mockRecipe = TestDataUtil.createRecipeDTOList(false, true).get(0);
+
+        // Validate the first recipe creation
+        mockMvc.perform(post("/api/v1/recipes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockRecipe)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.title").value(mockRecipe.getTitle()))
+                .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
+
+        // Validate the error for a recipe with the same Title
+        mockMvc.perform(post("/api/v1/recipes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockRecipe)))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+        // Validate the error for a recipe with the same Title
+        mockMvc.perform(post("/api/v1/recipes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockRecipe)))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
     @DisplayName("Create - Invalid Recipe should return Status Bad Request")
     public void create_WhenInvalidRecipe_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         int newYield = -1;
         mockRecipe.setYield(newYield);
@@ -74,7 +106,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Create - Valid Recipe should return Created Recipe and Status Created")
     public void create_WhenValidRecipe_ShouldReturnCreatedRecipeAndStatusCreated() throws Exception {
-        RecipeDTO mockRecipe = TestDataUtil.createRecipeDTOList(false).get(0);
+        RecipeDTO mockRecipe = TestDataUtil.createRecipeDTOList(false, true).get(0);
 
         mockMvc.perform(post("/api/v1/recipes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,7 +121,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Delete - Invalid ID should return Status Bad Request")
     public void delete_WhenInvalidId_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         // Making sure the Recipe exists
         mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipe.getId())
@@ -107,7 +139,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Delete - Non-Existing ID should return Status Not Found")
     public void delete_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         // Making sure the Recipe exists
         mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipe.getId())
@@ -125,7 +157,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Delete - Valid ID should return Status No Content")
     public void delete_WhenValidId_ShouldReturnStatusNoContent() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false, true));
 
         mockMvc.perform(delete("/api/v1/recipes/{id}", mockRecipeList.get(0).getId()))
                 .andExpect(status().isNoContent());
@@ -138,7 +170,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Find All - Should return Recipes and Status OK")
     public void findAll_ShouldReturnRecipesAndStatusOK() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false, true));
 
         for (int i = 0; i < mockRecipeList.size(); i++) {
             mockMvc.perform(get("/api/v1/recipes")
@@ -154,7 +186,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Find By Category - Invalid Category ID Parameter should return Status Bad Request")
     public void findByCategory_WhenInvalidCategoryIdParameter_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         // Making sure that the Database HAS data
         mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
@@ -173,7 +205,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Find By Category - Non-Existing Category ID should return Empty and Status OK")
     public void findByCategory_WhenNonExistingCategoryId_ShouldReturnEmptyAndStatusOk() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         // Making sure that the Database HAS data
         mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
@@ -195,7 +227,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Find By Category - Valid Category ID should return Recipes and Status OK")
     public void findByCategory_WhenValidCategoryId_ShouldReturnRecipesAndStatusOK() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         mockMvc.perform(get("/api/v1/recipes/category/{categoryId}", mockRecipe.getCategories().get(0).getId())
                         .accept(MediaType.APPLICATION_JSON))
@@ -209,7 +241,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Find By ID - Invalid ID Parameter should return Status Bad Request")
     public void findById_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false, true));
 
         // Making sure that the Database HAS data
         mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipeList.get(0).getId())
@@ -228,7 +260,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Find By ID - Non-Existing ID should return Status Not Found")
     public void findById_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false, true));
 
         // Making sure that the Database HAS data
         mockMvc.perform(get("/api/v1/recipes/{id}", mockRecipeList.get(0).getId())
@@ -247,7 +279,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Find By ID - Valid ID should return Recipe and Status OK")
     public void findById_WhenValidId_ShouldReturnRecipeAndStatusOK() throws Exception {
-        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false));
+        List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false, true));
 
         for (RecipeDTO recipeDTO : mockRecipeList) {
             mockMvc.perform(get("/api/v1/recipes/{id}", recipeDTO.getId())
@@ -263,7 +295,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Partial Update - Invalid ID Parameter should return Status Bad Request")
     public void partialUpdate_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         String newTitle = "Updated recipe title";
         mockRecipe.setTitle(newTitle);
@@ -279,7 +311,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Partial Update - Non-Existing ID should return Status Not Found")
     public void partialUpdate_WhenNonExistingId_ShouldReturnStatusNotFound() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         String newTitle = "Updated recipe title";
         mockRecipe.setTitle(newTitle);
@@ -295,7 +327,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Partial Update - Valid ID and Fields should return Updated Recipe and Status OK")
     public void partialUpdate_WhenValidIdAndFields_ShouldReturnUpdatedRecipeAndStatusOK() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         String newTitle = "Updated recipe title";
         mockRecipe.setTitle(newTitle);
 
@@ -313,7 +345,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Search - Invalid Query should return Status Bad Request")
     public void search_WhenInvalidQuery_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         // Making sure that the Database HAS data
         String queryTitle = mockRecipe.getTitle();
@@ -335,7 +367,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Search - No Matches should return Empty and Status OK")
     public void search_WhenNoMatches_ShouldReturnEmptyAndStatusOk() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         // Making sure that the Database HAS data
         String queryTitle = mockRecipe.getTitle();
@@ -361,7 +393,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Search - Valid Query should return Recipes and Status OK")
     public void search_WhenValidQuery_ShouldReturnRecipesAndStatusOK() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         // Search by Recipe title
         String queryTitle = mockRecipe.getTitle();
@@ -387,7 +419,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Update - Invalid ID Parameter should return Status Bad Request")
     public void update_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         String newTitle = "Updated recipe title";
         mockRecipe.setTitle(newTitle);
@@ -403,7 +435,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Update - Non-Existent ID should return Status Not Found")
     public void update_WhenNonExistentId_ShouldReturnStatusNotFound() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
 
         String newTitle = "Updated recipe title";
         mockRecipe.setTitle(newTitle);
@@ -419,7 +451,7 @@ public class RecipeControllerIntegrationTest {
     @Test
     @DisplayName("Update - Valid ID and Recipe should return Updated Recipe and Status OK")
     public void update_WhenValidIdAndRecipe_ShouldReturnUpdatedRecipeAndStatusOK() throws Exception {
-        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false).get(0));
+        RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
         String newTitle = "Updated recipe title";
         mockRecipe.setTitle(newTitle);
 
