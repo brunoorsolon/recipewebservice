@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -96,7 +97,7 @@ public class RecipeController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing recipe identified by id using the input recipeDTO. Returns the updated recipe details.")
+    @Operation(summary = "Update an existing recipe identified by id using the input recipe. Returns the updated recipe details.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Recipe updated successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RecipeDTO.class))}),
@@ -131,5 +132,16 @@ public class RecipeController {
     public ResponseEntity<Void> delete(@Parameter(description = "The unique identifier of the recipe") @PathVariable Long id) {
         recipeService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping(value = "/import-xml-data", consumes = MediaType.APPLICATION_XML_VALUE)
+    @Operation(summary = "Import XML Recipe data. Returns a success message with a 201 status code.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Recipes added successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid recipe data supplied"),
+            @ApiResponse(responseCode = "500", description = "Internal server error occurred")})
+    public ResponseEntity<Void> importXmlData(@Parameter(description = "The recipe") @RequestBody String recipeXml) {
+        recipeService.importXmlData(recipeXml);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

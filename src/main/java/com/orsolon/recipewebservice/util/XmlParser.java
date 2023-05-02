@@ -1,4 +1,4 @@
-package com.orsolon.recipewebservice.service;
+package com.orsolon.recipewebservice.util;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.orsolon.recipewebservice.dto.xml.RecipeMl;
@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Service
-public class RecipeXmlParser {
-    public RecipeMl parseXml(InputStream inputStream) throws IOException {
+public class XmlParser {
+    public RecipeMl parseRecipe(InputStream inputStream) throws IOException {
         XmlMapper xmlMapper = new XmlMapper();
         return xmlMapper.readValue(inputStream, RecipeMl.class);
     }

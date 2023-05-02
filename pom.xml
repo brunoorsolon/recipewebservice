@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.orsolon</groupId>
 	<artifactId>recipewebservice</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<name>Recipe Web Service</name>
 	<description>This project is a Java-based RESTful API for managing and serving recipes, built to support a Mendix-based web application. The motivation behind this project was to create a back-end service that allows web designers to retrieve, filter, and add recipes to the system. The project solves the problem of efficiently organizing and serving recipes through a RESTful API. Throughout the development process, I effectively applied my expertise in API design, Spring Boot, and JAVA while also broadening my knowledge about Mendix integration and its front-end capabilities.</description>
 	<properties>
@@ -79,6 +79,15 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
 			<version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

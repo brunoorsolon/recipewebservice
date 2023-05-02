@@ -1,10 +1,8 @@
-package com.orsolon.recipewebservice.service;
+package com.orsolon.recipewebservice.util;
 
 import com.orsolon.recipewebservice.dto.RecipeDTO;
 import com.orsolon.recipewebservice.dto.xml.RecipeMl;
-import com.orsolon.recipewebservice.exception.RecipeLoadingException;
-import com.orsolon.recipewebservice.exception.RecipeParsingException;
-import com.orsolon.recipewebservice.util.TestDataUtil;
+import com.orsolon.recipewebservice.service.RecipeServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,8 +20,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,10 +34,10 @@ public class RecipeInitializerTest {
     private RecipeInitializer recipeInitializer;
 
     @Mock
-    private RecipeXmlParser recipeXmlParser;
+    private XmlParser recipeXmlParser;
 
     @Mock
-    private RecipeService recipeService;
+    private RecipeServiceImpl recipeService;
 
     private ResourcePatternResolver resolver;
 
@@ -55,30 +53,15 @@ public class RecipeInitializerTest {
             }
         }
 
-        when(recipeXmlParser.parseXml(any(InputStream.class))).thenReturn(recipeMlList.get(0), recipeMlList.subList(1, recipeMlList.size()).toArray(new RecipeMl[0]));
+        doCallRealMethod().when(recipeService).importXmlData(any(String.class));
+        when(recipeService.create(any(RecipeDTO.class))).thenReturn(new RecipeDTO());
 
         recipeInitializer.loadRecipes();
 
-        verify(recipeXmlParser, times(resources.length)).parseXml(any(InputStream.class));
+        verify(recipeService, times(resources.length)).importXmlData(any(String.class));
         verify(recipeService, times(resources.length)).create(any(RecipeDTO.class));
     }
 
-    @Test
-    @DisplayName("Load recipes should throw RecipeLoadingException when an exception is thrown")
-    void loadRecipes_ShouldThrowRecipeLoadingException_WhenExceptionIsThrown() throws IOException {
-        IOException exception = new IOException("Test exception");
-        when(recipeXmlParser.parseXml(any(InputStream.class))).thenThrow(exception);
-
-        assertThrows(RecipeLoadingException.class, () -> recipeInitializer.loadRecipes());
-    }
-
-    @Test
-    @DisplayName("Load recipes should throw RecipeParsingException when recipe element is null")
-    void loadRecipes_ShouldThrowRecipeParsingException_WhenRecipeElementIsNull() throws IOException {
-        when(recipeXmlParser.parseXml(any(InputStream.class))).thenReturn(new RecipeMl());
-
-        assertThrows(RecipeParsingException.class, () -> recipeInitializer.loadRecipes());
-    }
 
     @BeforeEach
     public void setUp() {

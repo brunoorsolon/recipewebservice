@@ -1,5 +1,6 @@
 package com.orsolon.recipewebservice.exception;
 
+import com.orsolon.recipewebservice.config.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -20,7 +22,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest
-@ContextConfiguration(classes = {GlobalExceptionHandlerTest.TestController.class, GlobalExceptionHandler.class})
+@ContextConfiguration(classes = {
+        GlobalExceptionHandlerTest.TestController.class,
+        GlobalExceptionHandler.class,
+        SecurityConfig.class
+})
 @DisplayName("Global Exception Handler Test")
 public class GlobalExceptionHandlerTest {
 
@@ -34,6 +40,7 @@ public class GlobalExceptionHandlerTest {
     private MockMvc mockMvc;
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Handle InvalidFieldException should return status bad request")
     public void handleInvalidFieldException_ShouldReturnStatusBadRequest() throws Exception {
         mockMvc.perform(get("/throwInvalidFieldException"))
@@ -44,6 +51,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Handle InvalidFieldValueException should return status bad request")
     public void handleInvalidFieldValueException_ShouldReturnStatusBadRequest() throws Exception {
         mockMvc.perform(get("/throwInvalidFieldValueException"))
@@ -54,6 +62,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Handle RecipeAlreadyExistsException should return status conflict")
     public void handleRecipeAlreadyExistsException_ShouldReturnStatusConflict() throws Exception {
         mockMvc.perform(get("/throwRecipeAlreadyExistsException"))
@@ -64,6 +73,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Handle RecipeCategoryNotFoundException should return status not found")
     public void handleRecipeCategoryNotFoundException_ShouldReturnStatusNotFound() throws Exception {
         mockMvc.perform(get("/throwRecipeCategoryNotFoundException"))
@@ -74,6 +84,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Handle RecipeNotFoundException should return status not found")
     public void handleRecipeNotFoundException_ShouldReturnStatusNotFound() throws Exception {
         mockMvc.perform(get("/throwRecipeNotFoundException"))

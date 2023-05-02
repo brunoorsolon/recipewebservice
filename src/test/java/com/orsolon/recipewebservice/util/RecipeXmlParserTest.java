@@ -1,10 +1,9 @@
-package com.orsolon.recipewebservice.service;
+package com.orsolon.recipewebservice.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.orsolon.recipewebservice.dto.xml.IngredientXml;
 import com.orsolon.recipewebservice.dto.xml.RecipeMl;
-import com.orsolon.recipewebservice.util.TestDataUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RecipeXmlParserTest {
 
     @InjectMocks
-    private RecipeXmlParser recipeXmlParser;
+    private XmlParser recipeXmlParser;
     @Mock
     private XmlMapper xmlMapper;
     private ObjectMapper objectMapper;
@@ -43,7 +42,7 @@ class RecipeXmlParserTest {
 
         RecipeMl actualRecipeMl;
         try (InputStream is = resource.getInputStream()) {
-            actualRecipeMl = recipeXmlParser.parseXml(is);
+            actualRecipeMl = recipeXmlParser.parseRecipe(is);
         }
 
         assertNotNull(actualRecipeMl);
@@ -86,7 +85,7 @@ class RecipeXmlParserTest {
     public void parseXml_ShouldThrowIOException_WhenInputStreamIsInvalid() {
         Resource nonExistentResource = resolver.getResource("classpath:data/recipes/non_existent_recipe.xml");
 
-        assertThrows(IOException.class, () -> recipeXmlParser.parseXml(nonExistentResource.getInputStream()));
+        assertThrows(IOException.class, () -> recipeXmlParser.parseRecipe(nonExistentResource.getInputStream()));
     }
 
     @BeforeEach

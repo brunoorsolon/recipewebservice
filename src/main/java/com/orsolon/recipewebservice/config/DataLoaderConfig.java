@@ -2,7 +2,7 @@ package com.orsolon.recipewebservice.config;
 
 import com.orsolon.recipewebservice.exception.RecipeLoadingException;
 import com.orsolon.recipewebservice.exception.RecipeParsingException;
-import com.orsolon.recipewebservice.service.RecipeInitializer;
+import com.orsolon.recipewebservice.util.RecipeInitializer;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;

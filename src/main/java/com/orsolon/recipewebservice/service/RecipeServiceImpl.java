@@ -3,14 +3,20 @@ package com.orsolon.recipewebservice.service;
 import com.orsolon.recipewebservice.dto.IngredientDTO;
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.dto.RecipeDTO;
+import com.orsolon.recipewebservice.dto.xml.IngredientDiv;
+import com.orsolon.recipewebservice.dto.xml.IngredientXml;
+import com.orsolon.recipewebservice.dto.xml.RecipeMl;
 import com.orsolon.recipewebservice.exception.InvalidFieldValueException;
 import com.orsolon.recipewebservice.exception.RecipeAlreadyExistsException;
+import com.orsolon.recipewebservice.exception.RecipeLoadingException;
 import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
+import com.orsolon.recipewebservice.exception.RecipeParsingException;
 import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.model.Recipe;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeValidatorHelper;
+import com.orsolon.recipewebservice.util.XmlParser;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -19,6 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -206,6 +216,52 @@ public class RecipeServiceImpl implements RecipeService {
     private void validateStringParameter(String string) {
         if (string == null || string.isEmpty()) {
             throw new InvalidFieldValueException("Invalid value: " + string);
+        }
+    }
+
+    @Override
+    public void importXmlData(String recipeXmlString) {
+        try {
+            XmlParser xmlParser = new XmlParser();
+            InputStream recipeInputStream = new ByteArrayInputStream(recipeXmlString.getBytes());
+            RecipeMl recipeMl = xmlParser.parseRecipe(recipeInputStream);
+            if (recipeMl.getRecipe() != null) {
+                List<RecipeCategoryDTO> recipeCategories = new ArrayList<>();
+
+                for (String recipeCategory : recipeMl.getRecipe().getHead().getCategories()) {
+                    recipeCategories.add(
+                            RecipeCategoryDTO.builder()
+                                    .name(recipeCategory)
+                                    .build());
+                }
+
+                List<IngredientDTO> recipeIngredients = new ArrayList<>();
+
+                for (IngredientDiv ingredientDiv : recipeMl.getRecipe().getIngredientList().getIngredientDivs()) {
+                    for (IngredientXml ingredientXml : ingredientDiv.getIngredients()) {
+                        recipeIngredients.add(
+                                IngredientDTO.builder()
+                                        .title(ingredientDiv.getTitle())
+                                        .item(ingredientXml.getItem())
+                                        .quantity(ingredientXml.getAmount().getQuantity())
+                                        .unit(ingredientXml.getAmount().getUnit())
+                                        .build());
+                    }
+                }
+
+                create(
+                        RecipeDTO.builder()
+                                .title(recipeMl.getRecipe().getHead().getTitle())
+                                .categories(recipeCategories)
+                                .yield(recipeMl.getRecipe().getHead().getYield())
+                                .ingredients(recipeIngredients)
+                                .steps(recipeMl.getRecipe().getSteps())
+                                .build());
+            } else {
+                throw new RecipeParsingException("Error parsing XML file: invalid recipe data");
+            }
+        } catch (IOException e) {
+            throw new RecipeLoadingException("Error loading recipes: " + e.getMessage());
         }
     }
 }
