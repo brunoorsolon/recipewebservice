@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 
@@ -23,6 +24,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @Slf4j
+@ActiveProfiles("test")
+@DisplayName("Recipe Initializer Test")
 public class RecipeInitializerTest {
 
     @InjectMocks

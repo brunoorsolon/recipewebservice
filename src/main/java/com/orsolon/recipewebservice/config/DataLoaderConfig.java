@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 
 // Responsible for loading default data into the system
 @Configuration
-@Profile("!test")
+@Profile("development")
 @Slf4j
 public class DataLoaderConfig {
     private final RecipeInitializer recipeInitializer;

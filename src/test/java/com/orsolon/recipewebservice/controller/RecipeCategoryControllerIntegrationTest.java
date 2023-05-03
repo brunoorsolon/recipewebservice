@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
 @Transactional
+@ActiveProfiles("test")
 @DisplayName("Recipe Category Controller Integration Test")
 public class RecipeCategoryControllerIntegrationTest {
 
@@ -79,6 +81,12 @@ public class RecipeCategoryControllerIntegrationTest {
         ObjectMapper objectMapper = new ObjectMapper();
         CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, RecipeCategoryDTO.class);
         List<RecipeCategoryDTO> responseCategories = objectMapper.readValue(jsonResponse, listType);
+
+        Collections.sort(mockCategoryList, Comparator.comparing(RecipeCategoryDTO::getName)
+                .thenComparing(RecipeCategoryDTO::getId));
+
+        Collections.sort(responseCategories, Comparator.comparing(RecipeCategoryDTO::getName)
+                .thenComparing(RecipeCategoryDTO::getId));
 
 
         for (int i=0;i<mockCategoryList.size(); i++) {

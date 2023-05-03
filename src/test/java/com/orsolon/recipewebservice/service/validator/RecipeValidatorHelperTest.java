@@ -9,6 +9,7 @@ import com.orsolon.recipewebservice.util.TestDataUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("Recipe Validator Helper Test")
 public class RecipeValidatorHelperTest {
 
