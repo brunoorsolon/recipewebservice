@@ -135,13 +135,14 @@ public class RecipeController {
     }
 
     @PostMapping(value = "/import-xml-data", consumes = MediaType.APPLICATION_XML_VALUE)
-    @Operation(summary = "Import XML Recipe data. Returns a success message with a 201 status code.")
+    @Operation(summary = "Create a new recipe in the system based on the input XML data. Returns the created recipe details.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Recipes added successfully"),
+            @ApiResponse(responseCode = "201", description = "Recipe added successfully",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RecipeDTO.class))}),
             @ApiResponse(responseCode = "400", description = "Invalid recipe data supplied"),
             @ApiResponse(responseCode = "500", description = "Internal server error occurred")})
-    public ResponseEntity<Void> importXmlData(@Parameter(description = "The recipe") @RequestBody String recipeXml) {
-        recipeService.importXmlData(recipeXml);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<RecipeDTO> importXmlData(@Parameter(description = "The recipe") @RequestBody String recipeXml) {
+        RecipeDTO createdRecipe = recipeService.importXmlData(recipeXml);
+        return new ResponseEntity<>(createdRecipe, HttpStatus.CREATED);
     }
 }

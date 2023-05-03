@@ -15,5 +15,5 @@ public interface RecipeService {
     RecipeDTO update(Long id, RecipeDTO recipeDTO);
     RecipeDTO partialUpdate(Long recipeId, Map<String, Object> updates);
     void delete(Long recipeId);
-    void importXmlData(String recipeXmlString);
+    RecipeDTO importXmlData(String recipeXmlString);
 }

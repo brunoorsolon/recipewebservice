@@ -220,7 +220,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public void importXmlData(String recipeXmlString) {
+    public RecipeDTO importXmlData(String recipeXmlString) {
         try {
             XmlParser xmlParser = new XmlParser();
             InputStream recipeInputStream = new ByteArrayInputStream(recipeXmlString.getBytes());
@@ -249,7 +249,7 @@ public class RecipeServiceImpl implements RecipeService {
                     }
                 }
 
-                create(
+                return create(
                         RecipeDTO.builder()
                                 .title(recipeMl.getRecipe().getHead().getTitle())
                                 .categories(recipeCategories)

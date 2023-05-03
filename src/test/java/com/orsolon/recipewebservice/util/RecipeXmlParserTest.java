@@ -1,7 +1,5 @@
 package com.orsolon.recipewebservice.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.orsolon.recipewebservice.dto.xml.IngredientXml;
 import com.orsolon.recipewebservice.dto.xml.RecipeMl;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -29,11 +26,12 @@ class RecipeXmlParserTest {
 
     @InjectMocks
     private XmlParser recipeXmlParser;
-    @Mock
-    private XmlMapper xmlMapper;
-    private ObjectMapper objectMapper;
-    private RecipeMl sampleRecipeMl;
     private ResourcePatternResolver resolver;
+
+    @BeforeEach
+    public void setUp() {
+        resolver = new PathMatchingResourcePatternResolver();
+    }
 
     @Test
     @DisplayName("Parse XML should return a valid RecipeMl object")
@@ -86,12 +84,5 @@ class RecipeXmlParserTest {
         Resource nonExistentResource = resolver.getResource("classpath:data/recipes/non_existent_recipe.xml");
 
         assertThrows(IOException.class, () -> recipeXmlParser.parseRecipe(nonExistentResource.getInputStream()));
-    }
-
-    @BeforeEach
-    public void setUp() {
-        objectMapper = new ObjectMapper();
-        sampleRecipeMl = TestDataUtil.createRecipeMlList(1).get(0);
-        resolver = new PathMatchingResourcePatternResolver();
     }
 }

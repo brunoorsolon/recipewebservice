@@ -2,9 +2,11 @@ package com.orsolon.recipewebservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orsolon.recipewebservice.dto.RecipeDTO;
+import com.orsolon.recipewebservice.dto.xml.RecipeMl;
 import com.orsolon.recipewebservice.exception.GlobalExceptionHandler;
 import com.orsolon.recipewebservice.service.RecipeServiceImpl;
 import com.orsolon.recipewebservice.util.TestDataUtil;
+import com.orsolon.recipewebservice.util.XmlParser;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,11 +16,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +51,7 @@ public class RecipeControllerIntegrationTest {
     private final RecipeServiceImpl recipeService;
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
+    private ResourcePatternResolver resolver;
 
     @Autowired
     public RecipeControllerIntegrationTest(RecipeServiceImpl recipeService) {
@@ -52,11 +61,26 @@ public class RecipeControllerIntegrationTest {
     @BeforeEach
     public void setUp() {
         this.objectMapper = new ObjectMapper();
+        this.resolver = new PathMatchingResourcePatternResolver();
         this.mockMvc = MockMvcBuilders.standaloneSetup(new RecipeController(recipeService), new GlobalExceptionHandler()).build();
     }
 
+    // Helper method to pre-populate the database with a list of random recipes.
+    private @NotNull List<RecipeDTO> setUp_AddListOfRecipesToTheDatabase(@NotNull List<RecipeDTO> mockRecipeList) {
+        List<RecipeDTO> savedRecipes = new ArrayList<>();
+        for (RecipeDTO mockRecipe : mockRecipeList) {
+            savedRecipes.add(recipeService.create(mockRecipe));
+        }
+        return savedRecipes;
+    }
+
+    // Helper method to pre-populate the database with a single recipe.
+    private @NotNull RecipeDTO setUp_AddSingleRecipeToTheDatabase(@NotNull RecipeDTO mockRecipe) {
+        return recipeService.create(mockRecipe);
+    }
+
     @Test
-    @DisplayName("Create - Recipe with the sam title as an existing one should Status Conflict")
+    @DisplayName("Create - Recipe with the same title as an existing one should Status Conflict")
     public void create_WhenExistingTitle_ShouldReturnStatusConflict() throws Exception {
         RecipeDTO mockRecipe = TestDataUtil.createRecipeDTOList(false, true).get(0);
 
@@ -69,14 +93,6 @@ public class RecipeControllerIntegrationTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.title").value(mockRecipe.getTitle()))
                 .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
-
-        // Validate the error for a recipe with the same Title
-        mockMvc.perform(post("/api/v1/recipes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockRecipe)))
-                .andExpect(status().isConflict())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
         // Validate the error for a recipe with the same Title
         mockMvc.perform(post("/api/v1/recipes")
@@ -293,6 +309,73 @@ public class RecipeControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Import XML Data - Recipe with the same title as an existing one should Status Conflict")
+    public void importXmlData_WhenExistingTitle_ShouldReturnStatusConflict() throws Exception {
+        Resource resource = resolver.getResource("classpath:data/test/30_Minute_Chili.xml");
+
+        String recipeXmlString = resource.getContentAsString(Charset.defaultCharset());
+
+        XmlParser xmlParser = new XmlParser();
+        InputStream recipeInputStream = new ByteArrayInputStream(recipeXmlString.getBytes());
+        RecipeMl recipeMl = xmlParser.parseRecipe(recipeInputStream);
+
+        // Validate the first recipe creation
+        mockMvc.perform(post("/api/v1/recipes/import-xml-data")
+                        .contentType(MediaType.APPLICATION_XML_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(recipeXmlString))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.title").value(recipeMl.getRecipe().getHead().getTitle()))
+                .andExpect(jsonPath("$.yield").value(recipeMl.getRecipe().getHead().getYield()));
+
+        // Validate the error for a recipe with the same Title
+        mockMvc.perform(post("/api/v1/recipes/import-xml-data")
+                        .contentType(MediaType.APPLICATION_XML_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(recipeXmlString))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @DisplayName("Import XML Data - Invalid Recipe should return Status Bad Request")
+    public void importXmlData_WhenInvalidRecipe_ShouldReturnStatusBadRequest() throws Exception {
+        Resource resource = resolver.getResource("classpath:data/test/INVALID_RECIPE.xml");
+
+        String recipeXmlString = resource.getContentAsString(Charset.defaultCharset());
+
+        mockMvc.perform(post("/api/v1/recipes/import-xml-data")
+                        .contentType(MediaType.APPLICATION_XML_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(recipeXmlString))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @DisplayName("Import XML Data - Valid Recipe should return Created Recipe and Status Created")
+    public void importXmlData_WhenValidRecipe_ShouldReturnCreatedRecipeAndStatusCreated() throws Exception {
+        Resource resource = resolver.getResource("classpath:data/test/30_Minute_Chili.xml");
+
+        String recipeXmlString = resource.getContentAsString(Charset.defaultCharset());
+
+        XmlParser xmlParser = new XmlParser();
+        InputStream recipeInputStream = new ByteArrayInputStream(recipeXmlString.getBytes());
+        RecipeMl recipeMl = xmlParser.parseRecipe(recipeInputStream);
+
+        // Validate the first recipe creation
+        mockMvc.perform(post("/api/v1/recipes/import-xml-data")
+                        .contentType(MediaType.APPLICATION_XML_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(recipeXmlString))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.title").value(recipeMl.getRecipe().getHead().getTitle()))
+                .andExpect(jsonPath("$.yield").value(recipeMl.getRecipe().getHead().getYield()));
+    }
+
+    @Test
     @DisplayName("Partial Update - Invalid ID Parameter should return Status Bad Request")
     public void partialUpdate_WhenInvalidIdParameter_ShouldReturnStatusBadRequest() throws Exception {
         RecipeDTO mockRecipe = setUp_AddSingleRecipeToTheDatabase(TestDataUtil.createRecipeDTOList(false, true).get(0));
@@ -464,20 +547,6 @@ public class RecipeControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").value(mockRecipe.getId()))
                 .andExpect(jsonPath("$.title").value(newTitle))
                 .andExpect(jsonPath("$.yield").value(mockRecipe.getYield()));
-    }
-
-    // Helper method to pre-populate the database with a list of random recipes.
-    private @NotNull List<RecipeDTO> setUp_AddListOfRecipesToTheDatabase(@NotNull List<RecipeDTO> mockRecipeList) {
-        List<RecipeDTO> savedRecipes = new ArrayList<>();
-        for (RecipeDTO mockRecipe : mockRecipeList) {
-            savedRecipes.add(recipeService.create(mockRecipe));
-        }
-        return savedRecipes;
-    }
-
-    // Helper method to pre-populate the database with a single recipe.
-    private @NotNull RecipeDTO setUp_AddSingleRecipeToTheDatabase(@NotNull RecipeDTO mockRecipe) {
-        return recipeService.create(mockRecipe);
     }
 
 }

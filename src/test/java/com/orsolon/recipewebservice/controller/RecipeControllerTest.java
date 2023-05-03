@@ -249,7 +249,6 @@ public class RecipeControllerTest {
     @Test
     @DisplayName("Partial Update - Should update Recipe Fields and return Status OK")
     public void partialUpdate_ShouldUpdateRecipeFieldsAndReturnStatusOK()  {
-        RecipeDTO recipe = new RecipeDTO();
         RecipeDTO updatedRecipe = new RecipeDTO();
         Long id = 1L;
         Map<String, Object> updates = new HashMap<>();
@@ -341,5 +340,4 @@ public class RecipeControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(updatedRecipe, responseEntity.getBody());
     }
-
 }
