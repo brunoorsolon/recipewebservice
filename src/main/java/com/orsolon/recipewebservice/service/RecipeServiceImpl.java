@@ -11,16 +11,15 @@ import com.orsolon.recipewebservice.exception.RecipeAlreadyExistsException;
 import com.orsolon.recipewebservice.exception.RecipeLoadingException;
 import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
 import com.orsolon.recipewebservice.exception.RecipeParsingException;
+import com.orsolon.recipewebservice.mapper.IngredientMapper;
+import com.orsolon.recipewebservice.mapper.RecipeCategoryMapper;
+import com.orsolon.recipewebservice.mapper.RecipeMapper;
 import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.model.Recipe;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeValidatorHelper;
 import com.orsolon.recipewebservice.util.XmlParser;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -39,19 +38,35 @@ public class RecipeServiceImpl implements RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final RecipeCategoryService recipeCategoryService;
-    private final DTOConverter dtoConverter;
+    private final RecipeMapper recipeMapper;
+    private final RecipeCategoryMapper recipeCategoryMapper;
+    private final IngredientMapper ingredientMapper;
 
     @Autowired
-    public RecipeServiceImpl(RecipeRepository recipeRepository, RecipeCategoryService recipeCategoryService, DTOConverter dtoConverter) {
+    public RecipeServiceImpl(RecipeRepository recipeRepository, RecipeCategoryService recipeCategoryService, RecipeMapper recipeMapper, RecipeCategoryMapper recipeCategoryMapper, IngredientMapper ingredientMapper) {
         this.recipeRepository = recipeRepository;
         this.recipeCategoryService = recipeCategoryService;
-        this.dtoConverter = dtoConverter;
+        this.recipeMapper = recipeMapper;
+        this.recipeCategoryMapper = recipeCategoryMapper;
+        this.ingredientMapper = ingredientMapper;
+    }
+
+    private void validateIdParameter(Long id) {
+        if (id == null || id <= 0) {
+            throw new InvalidFieldValueException("Invalid value: " + id);
+        }
+    }
+
+    private void validateStringParameter(String string) {
+        if (string == null || string.isEmpty()) {
+            throw new InvalidFieldValueException("Invalid value: " + string);
+        }
     }
 
     @Override
     public List<RecipeDTO> findAll() {
         return recipeRepository.findAllByOrderByTitleAsc().stream()
-                .map(dtoConverter::convertRecipeToDTO)
+                .map(recipeMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -61,7 +76,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
-        return dtoConverter.convertRecipeToDTO(recipe);
+        return recipeMapper.toDTO(recipe);
     }
 
     @Override
@@ -69,8 +84,8 @@ public class RecipeServiceImpl implements RecipeService {
         validateStringParameter(title);
 
         Recipe recipe = recipeRepository.findByTitle(title)
-                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with titel: " + title));
-        return dtoConverter.convertRecipeToDTO(recipe);
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with title: " + title));
+        return recipeMapper.toDTO(recipe);
     }
 
     @Override
@@ -79,7 +94,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         List<Recipe> recipes = recipeRepository.findByCategories_Id(categoryId);
         return recipes.stream()
-                .map(dtoConverter::convertRecipeToDTO)
+                .map(recipeMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -87,19 +102,14 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeDTO> search(String query) {
         validateStringParameter(query);
 
-        Specification<Recipe> searchSpec = new Specification<Recipe>() {
-            @Override
-            public Predicate toPredicate(Root<Recipe> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                return criteriaBuilder.or(
-                        criteriaBuilder.like(root.get("title"), "%" + query + "%"),
-                        criteriaBuilder.like(root.join("categories").get("name"), "%" + query + "%")
-                );
-            }
-        };
+        Specification<Recipe> searchSpec = (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.or(
+                criteriaBuilder.like(root.get("title"), "%" + query + "%"),
+                criteriaBuilder.like(root.join("categories").get("name"), "%" + query + "%")
+        );
 
         List<Recipe> foundRecipes = recipeRepository.findAll(searchSpec);
         return foundRecipes.stream()
-                .map(dtoConverter::convertRecipeToDTO)
+                .map(recipeMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -109,7 +119,7 @@ public class RecipeServiceImpl implements RecipeService {
         RecipeDTO sanitizedRecipeDTO = RecipeValidatorHelper.validateAndSanitize(recipeDTO);
 
         // Convert the sanitized RecipeDTO to a Recipe entity
-        Recipe recipeToSave = dtoConverter.convertRecipeToEntity(sanitizedRecipeDTO);
+        Recipe recipeToSave = recipeMapper.toEntity(sanitizedRecipeDTO);
 
         Optional<Recipe> existingRecipe;
         if (recipeDTO.getId() != null) {
@@ -127,7 +137,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         // Persist associated RecipeCategory objects first
         recipeToSave.getCategories().forEach(category -> {
-            RecipeCategoryDTO savedCategory = recipeCategoryService.create(dtoConverter.convertRecipeCategoryToDTO(category));
+            RecipeCategoryDTO savedCategory = recipeCategoryService.create(recipeCategoryMapper.toDTO(category));
             category.setId(savedCategory.getId());
         });
 
@@ -140,7 +150,7 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe savedRecipe = recipeRepository.save(recipeToSave);
 
         // Convert the saved Recipe entity back to a RecipeDTO
-        return dtoConverter.convertRecipeToDTO(savedRecipe);
+        return recipeMapper.toDTO(savedRecipe);
     }
 
     @Override
@@ -153,14 +163,14 @@ public class RecipeServiceImpl implements RecipeService {
         // Validate and sanitize the input RecipeDTO object
         RecipeDTO sanitizedRecipeDTO = RecipeValidatorHelper.validateAndSanitize(recipeDTO);
 
-        Recipe updatedRecipe = dtoConverter.convertRecipeToEntity(sanitizedRecipeDTO);
+        Recipe updatedRecipe = recipeMapper.toEntity(sanitizedRecipeDTO);
         updatedRecipe.setId(existingRecipe.getId());
 
         // Update the Recipe entity to the repository
         recipeRepository.save(updatedRecipe);
 
         // Convert the updated Recipe entity back to a RecipeDTO
-        return dtoConverter.convertRecipeToDTO(updatedRecipe);
+        return recipeMapper.toDTO(updatedRecipe);
     }
 
     @Override
@@ -179,13 +189,13 @@ public class RecipeServiceImpl implements RecipeService {
                 case "yield" -> existingRecipe.setYield((Integer) value);
                 case "categories" -> {
                     List<RecipeCategory> categories = ((List<RecipeCategoryDTO>) value).stream()
-                            .map(dtoConverter::convertRecipeCategoryToEntity)
+                            .map(recipeCategoryMapper::toEntity)
                             .collect(Collectors.toList());
                     existingRecipe.setCategories(categories);
                 }
                 case "ingredients" -> {
                     List<Ingredient> ingredients = ((List<IngredientDTO>) value).stream()
-                            .map(dtoConverter::convertIngredientToEntity)
+                            .map(ingredientMapper::toEntity)
                             .peek(ingredient -> ingredient.setRecipe(existingRecipe))
                             .collect(Collectors.toList());
                     existingRecipe.setIngredients(ingredients);
@@ -195,7 +205,7 @@ public class RecipeServiceImpl implements RecipeService {
         });
 
         recipeRepository.save(existingRecipe);
-        return dtoConverter.convertRecipeToDTO(existingRecipe);
+        return recipeMapper.toDTO(existingRecipe);
     }
 
     @Override
@@ -205,18 +215,6 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
         recipeRepository.delete(recipe);
-    }
-
-    private void validateIdParameter(Long id) {
-        if (id == null || id <= 0) {
-            throw new InvalidFieldValueException("Invalid value: " + id);
-        }
-    }
-
-    private void validateStringParameter(String string) {
-        if (string == null || string.isEmpty()) {
-            throw new InvalidFieldValueException("Invalid value: " + string);
-        }
     }
 
     @Override

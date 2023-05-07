@@ -82,10 +82,10 @@ public class RecipeCategoryControllerIntegrationTest {
         CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, RecipeCategoryDTO.class);
         List<RecipeCategoryDTO> responseCategories = objectMapper.readValue(jsonResponse, listType);
 
-        Collections.sort(mockCategoryList, Comparator.comparing(RecipeCategoryDTO::getName)
+        mockCategoryList.sort(Comparator.comparing(RecipeCategoryDTO::getName)
                 .thenComparing(RecipeCategoryDTO::getId));
 
-        Collections.sort(responseCategories, Comparator.comparing(RecipeCategoryDTO::getName)
+        responseCategories.sort(Comparator.comparing(RecipeCategoryDTO::getName)
                 .thenComparing(RecipeCategoryDTO::getId));
 
 

@@ -1,13 +1,12 @@
 package com.orsolon.recipewebservice.exception;
 
 import com.orsolon.recipewebservice.config.SecurityConfig;
+import com.orsolon.recipewebservice.config.TestConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.stereotype.Controller;
@@ -25,7 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {
         GlobalExceptionHandlerTest.TestController.class,
         GlobalExceptionHandler.class,
-        SecurityConfig.class
+        SecurityConfig.class,
+        TestConfig.class
 })
 @DisplayName("Global Exception Handler Test")
 public class GlobalExceptionHandlerTest {
@@ -92,11 +92,6 @@ public class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
                 .andExpect(jsonPath("$.error").value(HttpStatus.NOT_FOUND.getReasonPhrase()))
                 .andExpect(jsonPath("$.message").value(RECIPE_NOT_FOUND_MSG));
-    }
-
-    @Configuration
-    @Import(GlobalExceptionHandler.class)
-    static class Config {
     }
 
     @Controller

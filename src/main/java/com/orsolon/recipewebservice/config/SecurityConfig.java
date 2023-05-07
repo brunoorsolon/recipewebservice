@@ -1,69 +1,62 @@
 package com.orsolon.recipewebservice.config;
 
+import com.orsolon.recipewebservice.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private static final String apiV1Context = "/api/v1";
+    private final CustomUserDetailsService customUserDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http
-                .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll()
-/*
-                        // Allow access to swagger ui
-                        .requestMatchers("/swagger-ui**").permitAll()
-                        // Allow access to Recipes and Recipe Categories using GET endpoints
-                        .requestMatchers(HttpMethod.GET, apiV1Context+"/recipes**", apiV1Context+"/categories**").permitAll()
-                        // Restrict access to DELETE endpoints for ADMIN role
-                        .requestMatchers(HttpMethod.DELETE, apiV1Context+"/**").hasRole("ADMIN")
-                        // Restrict access to POST, PUT and PATCH endpoints for USER or ADMIN roles
-                        .requestMatchers(HttpMethod.POST, apiV1Context+"/**").access(new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('USER')"))
-                        .requestMatchers(HttpMethod.PUT, apiV1Context+"/**").access(new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('USER')"))
-                        .requestMatchers(HttpMethod.PATCH, apiV1Context+"/**").access(new WebExpressionAuthorizationManager("hasRole('ADMIN') or hasRole('USER')"))
-                        // Wildcard restrict for any other URL we did not configure above
-                        .anyRequest().hasRole("ADMIN")
-
- */
-                )
-                .httpBasic(withDefaults());
-        return http.build();
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService, @Lazy PasswordEncoder passwordEncoder) {
+        this.customUserDetailsService = customUserDetailsService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username("user")
-                .password("password")
-                .roles("USER")
-                .build();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-        UserDetails test_user = User.withDefaultPasswordEncoder()
-                .username("test_user")
-                .password("password")
-                .roles("ADMIN")
-                .build();
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        RequestMatcher homeEndpoint = new AntPathRequestMatcher("/", "GET");
+        RequestMatcher loginEndpoint = new AntPathRequestMatcher("/login", "GET");
+        RequestMatcher protectedEndpoints = new AntPathRequestMatcher(apiV1Context + "/**", "GET");
+        RequestMatcher postEndpoints = new AntPathRequestMatcher(apiV1Context + "/**", "POST");
+        RequestMatcher putEndpoints = new AntPathRequestMatcher(apiV1Context + "/**", "PUT");
+        RequestMatcher patchEndpoints = new AntPathRequestMatcher(apiV1Context + "/**", "PATCH");
+        RequestMatcher deleteEndpoints = new AntPathRequestMatcher(apiV1Context + "/**", "DELETE");
 
-        UserDetails admin = User.withDefaultPasswordEncoder()
-                .username("admin")
-                .password("password")
-                .roles("ADMIN")
-                .build();
+        http
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(homeEndpoint).permitAll()
+                        .requestMatchers(loginEndpoint).permitAll()
+                        .requestMatchers(protectedEndpoints).hasRole("USER")
+                        .requestMatchers(postEndpoints).hasRole("ADMIN")
+                        .requestMatchers(putEndpoints).hasRole("ADMIN")
+                        .requestMatchers(patchEndpoints).hasRole("ADMIN")
+                        .requestMatchers(deleteEndpoints).hasRole("ADMIN")
+                )
+                .httpBasic();
+        return http.build();
+    }
 
-        return new InMemoryUserDetailsManager(user, test_user, admin);
+    // Configure the authentication manager to use your custom UserDetailsService
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
     }
 }

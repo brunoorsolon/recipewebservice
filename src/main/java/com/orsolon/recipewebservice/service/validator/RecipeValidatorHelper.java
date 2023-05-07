@@ -69,7 +69,7 @@ public class RecipeValidatorHelper {
                     sanitizedUpdates.put(key, yield);
                 }
                 case "categories" -> {
-                    if (value != null && value instanceof List) {
+                    if (value instanceof List) {
                         try {
                             List<RecipeCategoryDTO> categories = CommonValidatorHelper.castList((List<?>) value, RecipeCategoryDTO.class);
                             validateCategories(categories);
@@ -82,7 +82,7 @@ public class RecipeValidatorHelper {
                     }
                 }
                 case "ingredients" -> {
-                    if (value != null && value instanceof List) {
+                    if (value instanceof List) {
                         try {
                                 List<IngredientDTO> ingredients = CommonValidatorHelper.castList((List<?>) value, IngredientDTO.class);
                                 validateIngredients(ingredients);
@@ -95,7 +95,7 @@ public class RecipeValidatorHelper {
                     }
                 }
                 case "steps" -> {
-                    if (value != null && value instanceof List) {
+                    if (value instanceof List) {
                         try {
                             List<String> steps = CommonValidatorHelper.castList((List<?>) value, String.class).stream()
                                     .map(CommonValidatorHelper::sanitizeStringValue)

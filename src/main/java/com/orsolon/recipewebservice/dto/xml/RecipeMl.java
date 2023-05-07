@@ -17,6 +17,5 @@ public class RecipeMl {
 
     @JacksonXmlProperty(isAttribute = true)
     private String version;
-
     private RecipeXml recipe;
 }

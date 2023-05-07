@@ -47,6 +47,7 @@ public class RecipeController {
         List<RecipeDTO> recipes = recipeService.findAll();
         return new ResponseEntity<>(recipes, HttpStatus.OK);
     }
+
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve a recipe by its unique identifier. Returns the recipe details if found, or a 'Recipe not found' message with a 404 status code if not found.")
     @ApiResponses(value = {
@@ -90,6 +91,7 @@ public class RecipeController {
             @ApiResponse(responseCode = "201", description = "Recipe created",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RecipeDTO.class))}),
             @ApiResponse(responseCode = "400", description = "Invalid field value or invalid field"),
+            @ApiResponse(responseCode = "409", description = "Recipe already registered"),
             @ApiResponse(responseCode = "500", description = "Internal server error occurred")})
     public ResponseEntity<RecipeDTO> create(@Parameter(description = "The recipe to create") @RequestBody RecipeDTO recipeDTO) {
         RecipeDTO createdRecipe = recipeService.create(recipeDTO);

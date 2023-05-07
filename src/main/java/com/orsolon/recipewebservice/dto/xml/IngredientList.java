@@ -21,15 +21,12 @@ public class IngredientList {
     @JacksonXmlProperty(localName = "ing-div")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<IngredientDiv> ingredientDivs;
-
     public List<IngredientDiv> getIngredientDivs() {
         return ingredientDivs;
     }
-
     public void setIngredientDivs(List<IngredientDiv> ingredientDivs) {
         this.ingredientDivs = ingredientDivs;
     }
-
     /*
         This is used for cases when IngredientDivs are not present in the origin XML.
         It reads the ingredients and creates an IngredientDiv instance.

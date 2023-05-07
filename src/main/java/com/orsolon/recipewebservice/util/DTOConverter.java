@@ -1,4 +1,4 @@
-package com.orsolon.recipewebservice.service;
+package com.orsolon.recipewebservice.util;
 
 import com.orsolon.recipewebservice.dto.IngredientDTO;
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 /*
     This class is responsible for handling conversions between Entity classes and DTO Classes.
  */
+@Deprecated(since = "1.4.0", forRemoval = true)
 @Service
 public class DTOConverter {
 

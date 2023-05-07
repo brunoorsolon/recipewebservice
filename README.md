@@ -110,7 +110,7 @@ This project is a Java-based RESTful API for managing and serving recipes, built
 
 4. Open a browser and navigate to `http://localhost:8081` to access the Mendix web application.
 
-5. After starting the Java RESTful API, the Swagger UI documentation will be available at `http://localhost:8080/swagger-ui.html`. This page, generated with Springdoc, provides an interactive and user-friendly interface to explore and test the available API endpoints.
+5. After starting the Java RESTful API, the Swagger UI documentation will be available at `http://localhost:8080/swagger-ui.html`. This page, generated with Springdoc, provides an interactive and appUser-friendly interface to explore and test the available API endpoints.
 
    Available API endpoints:
 

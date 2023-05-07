@@ -15,11 +15,9 @@ import java.util.List;
 @Builder
 public class RecipeHead {
     private String title;
-
     @JacksonXmlElementWrapper(localName = "categories")
     @JacksonXmlProperty(localName = "cat")
     private List<String> categories;
-
     @JacksonXmlProperty(localName = "yield")
     private int yield;
 }

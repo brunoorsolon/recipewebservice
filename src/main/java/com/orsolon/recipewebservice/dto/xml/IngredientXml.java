@@ -14,6 +14,5 @@ public class IngredientXml {
 
     @JacksonXmlProperty(localName = "amt")
     private IngredientAmount amount;
-
     private String item;
 }

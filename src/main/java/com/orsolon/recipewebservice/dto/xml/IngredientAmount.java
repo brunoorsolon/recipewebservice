@@ -13,6 +13,5 @@ import lombok.NoArgsConstructor;
 public class IngredientAmount {
     @JacksonXmlProperty(localName = "qty")
     private String quantity;
-
     private String unit;
 }

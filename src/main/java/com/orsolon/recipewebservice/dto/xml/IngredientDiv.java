@@ -15,7 +15,6 @@ import java.util.List;
 @Builder
 public class IngredientDiv {
     private String title;
-
     @JacksonXmlProperty(localName = "ing")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<IngredientXml> ingredients;

@@ -3,6 +3,7 @@ package com.orsolon.recipewebservice.service;
 import com.orsolon.recipewebservice.dto.RecipeCategoryDTO;
 import com.orsolon.recipewebservice.exception.RecipeCategoryNotFoundException;
 import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
+import com.orsolon.recipewebservice.mapper.RecipeCategoryMapper;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeCategoryRepository;
 import com.orsolon.recipewebservice.service.validator.RecipeCategoryValidatorHelper;
@@ -34,9 +35,19 @@ public class RecipeCategoryServiceTest {
 
     private RecipeCategoryService recipeCategoryService;
     private RecipeCategoryRepository recipeCategoryRepository;
-    private DTOConverter dtoConverter;
+    private RecipeCategoryMapper recipeCategoryMapper;
     @Captor
     private ArgumentCaptor<RecipeCategory> recipeCategoryCaptor;
+
+    @BeforeEach
+    void setUp() {
+        // Mock
+        this.recipeCategoryRepository = Mockito.mock(RecipeCategoryRepository.class);
+        this.recipeCategoryMapper = Mockito.mock(RecipeCategoryMapper.class);
+
+        // Inject Mocks
+        this.recipeCategoryService = new RecipeCategoryServiceImpl(recipeCategoryRepository, recipeCategoryMapper);
+    }
 
     // Helper method to create a mock RecipeCategory object
     private RecipeCategory createMockRecipeCategory() {
@@ -67,8 +78,8 @@ public class RecipeCategoryServiceTest {
             // Mock the necessary methods
             mockedRecipeCategoryValidatorHelper.when(() -> RecipeCategoryValidatorHelper.validateAndSanitize(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategoryDTO);
             Mockito.when(recipeCategoryRepository.save(any(RecipeCategory.class))).thenReturn(mockRecipeCategory);
-            Mockito.when(dtoConverter.convertRecipeCategoryToEntity(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategory);
-            Mockito.when(dtoConverter.convertRecipeCategoryToDTO(any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
+            Mockito.when(recipeCategoryMapper.toEntity(mockRecipeCategoryDTO)).thenReturn(mockRecipeCategory);
+            Mockito.when(recipeCategoryMapper.toDTO(any(RecipeCategory.class))).thenReturn(mockRecipeCategoryDTO);
 
             // Call the create method
             RecipeCategoryDTO createdRecipeCategoryDTO = recipeCategoryService.create(mockRecipeCategoryDTO);
@@ -110,16 +121,6 @@ public class RecipeCategoryServiceTest {
         assertThrows(RecipeNotFoundException.class, () -> recipeCategoryService.delete(1L));
     }
 
-    @BeforeEach
-    void setUp() {
-        // Mock
-        this.recipeCategoryRepository = Mockito.mock(RecipeCategoryRepository.class);
-        this.dtoConverter = Mockito.mock(DTOConverter.class);
-
-        // Inject Mocks
-        this.recipeCategoryService = new RecipeCategoryServiceImpl(recipeCategoryRepository, dtoConverter);
-    }
-
     @Test
     @DisplayName("Update Recipe Category should update and return updated Recipe Category")
     public void updateRecipeCategory_ShouldUpdateAndReturnUpdatedRecipeCategory() {
@@ -131,8 +132,8 @@ public class RecipeCategoryServiceTest {
 
         // Mock the necessary methods
         Mockito.when(recipeCategoryRepository.findById(1L)).thenReturn(Optional.of(mockRecipeCategory));
-        Mockito.when(dtoConverter.convertRecipeCategoryToEntity(any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
-        Mockito.when(dtoConverter.convertRecipeCategoryToDTO(mockRecipeCategory)).thenReturn(mockRecipeCategoryDTO);
+        Mockito.when(recipeCategoryMapper.toEntity(any(RecipeCategoryDTO.class))).thenReturn(mockRecipeCategory);
+        Mockito.when(recipeCategoryMapper.toDTO(mockRecipeCategory)).thenReturn(mockRecipeCategoryDTO);
         Mockito.when(recipeCategoryRepository.save(mockRecipeCategory)).thenReturn(mockRecipeCategory);
 
         // Call the update method

@@ -17,10 +17,8 @@ import java.util.List;
 public class RecipeXml {
 
     private RecipeHead head;
-
     @JacksonXmlProperty(localName = "ingredients")
     private IngredientList ingredientList;
-
     @JacksonXmlElementWrapper(localName = "directions")
     @JacksonXmlProperty(localName = "step")
     private List<String> steps;
