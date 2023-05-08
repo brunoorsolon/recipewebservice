@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.is;
@@ -65,9 +66,13 @@ public class RecipeCategoryControllerIntegrationTest {
     public void findAll_ShouldReturnCategoriesAndStatusOK() throws Exception {
         List<RecipeDTO> mockRecipeList = setUp_AddListOfRecipesToTheDatabase(TestDataUtil.createRecipeDTOList(false, true));
 
-        List<RecipeCategoryDTO> mockCategoryList = mockRecipeList.stream()
+        Set<RecipeCategoryDTO> uniqueCategorySet = mockRecipeList.stream()
                 .flatMap(recipe -> recipe.getCategories().stream())
-                .sorted(Comparator.comparing(RecipeCategoryDTO::getName)).collect(Collectors.toList());
+                .collect(Collectors.toSet());
+
+        List<RecipeCategoryDTO> mockCategoryList = uniqueCategorySet.stream()
+                .sorted(Comparator.comparing(RecipeCategoryDTO::getName))
+                .collect(Collectors.toList());
 
         MvcResult response = mockMvc.perform(get("/api/v1/categories")
                         .accept(MediaType.APPLICATION_JSON))

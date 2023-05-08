@@ -6,7 +6,6 @@ import com.orsolon.recipewebservice.dto.RecipeDTO;
 import com.orsolon.recipewebservice.dto.xml.IngredientDiv;
 import com.orsolon.recipewebservice.dto.xml.IngredientXml;
 import com.orsolon.recipewebservice.dto.xml.RecipeMl;
-import com.orsolon.recipewebservice.exception.InvalidFieldValueException;
 import com.orsolon.recipewebservice.exception.RecipeAlreadyExistsException;
 import com.orsolon.recipewebservice.exception.RecipeLoadingException;
 import com.orsolon.recipewebservice.exception.RecipeNotFoundException;
@@ -18,6 +17,7 @@ import com.orsolon.recipewebservice.model.Ingredient;
 import com.orsolon.recipewebservice.model.Recipe;
 import com.orsolon.recipewebservice.model.RecipeCategory;
 import com.orsolon.recipewebservice.repository.RecipeRepository;
+import com.orsolon.recipewebservice.service.validator.CommonValidatorHelper;
 import com.orsolon.recipewebservice.service.validator.RecipeValidatorHelper;
 import com.orsolon.recipewebservice.util.XmlParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,18 +51,6 @@ public class RecipeServiceImpl implements RecipeService {
         this.ingredientMapper = ingredientMapper;
     }
 
-    private void validateIdParameter(Long id) {
-        if (id == null || id <= 0) {
-            throw new InvalidFieldValueException("Invalid value: " + id);
-        }
-    }
-
-    private void validateStringParameter(String string) {
-        if (string == null || string.isEmpty()) {
-            throw new InvalidFieldValueException("Invalid value: " + string);
-        }
-    }
-
     @Override
     public List<RecipeDTO> findAll() {
         return recipeRepository.findAllByOrderByTitleAsc().stream()
@@ -72,7 +60,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO findById(Long recipeId) {
-        validateIdParameter(recipeId);
+        CommonValidatorHelper.validateIdParameter(recipeId);
 
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
@@ -81,7 +69,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO findByTitle(String title) {
-        validateStringParameter(title);
+        CommonValidatorHelper.validateStringParameter(title);
 
         Recipe recipe = recipeRepository.findByTitle(title)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with title: " + title));
@@ -90,7 +78,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public List<RecipeDTO> findByCategory(Long categoryId) {
-        validateIdParameter(categoryId);
+        CommonValidatorHelper.validateIdParameter(categoryId);
 
         List<Recipe> recipes = recipeRepository.findByCategories_Id(categoryId);
         return recipes.stream()
@@ -100,7 +88,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public List<RecipeDTO> search(String query) {
-        validateStringParameter(query);
+        CommonValidatorHelper.validateStringParameter(query);
 
         Specification<Recipe> searchSpec = (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.or(
                 criteriaBuilder.like(root.get("title"), "%" + query + "%"),
@@ -155,7 +143,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO update(Long recipeId, RecipeDTO recipeDTO) {
-        validateIdParameter(recipeId);
+        CommonValidatorHelper.validateIdParameter(recipeId);
 
         Recipe existingRecipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
@@ -175,7 +163,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO partialUpdate(Long recipeId, Map<String, Object> updates) {
-        validateIdParameter(recipeId);
+        CommonValidatorHelper.validateIdParameter(recipeId);
 
         Recipe existingRecipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
@@ -210,7 +198,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public void delete(Long recipeId) {
-        validateIdParameter(recipeId);
+        CommonValidatorHelper.validateIdParameter(recipeId);
 
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with id: " + recipeId));
